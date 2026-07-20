@@ -1,0 +1,246 @@
+From e6304c6b752c8c91e5e82063139b8b3ed55678fb Mon Sep 17 00:00:00 2001
+From: Kranthi Peruri <kperuri@qti.qualcomm.com>
+Date: Wed, 15 Jul 2026 18:51:33 +0530
+Subject: [PATCH] arm64: dts: qcom: qsc615-lyra-evk: Add support for QCS615
+ lyra evk board
+
+Add the device tree for the QCS615-based Lyra EVK platform. The
+platform is composed of a System-on-Module and a Carrier Board.
+
+The initial device tree includes support for:
+- CPU and memory
+- UART
+- GPIOs
+- Regulators
+- PMIC
+- Early console
+- AT24MAC602 EEPROM
+- MCP2515 SPI to CAN
+- ADV7535 DSI-to-HDMI bridge
+- DisplayPort interface
+- Wi-Fi/BT
+
+Upstream-Status: Submitted [https://github.com/qualcomm-linux/kernel/pull/829]
+
+Signed-off-by: Kranthi Peruri <kperuri@qti.qualcomm.com>
+---
+ arch/arm64/boot/dts/qcom/Makefile           |   1 +
+ arch/arm64/boot/dts/qcom/talos-lyra-evk.dts | 195 ++++++++++++++++++++
+ 2 files changed, 196 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/qcom/talos-lyra-evk.dts
+
+diff --git a/arch/arm64/boot/dts/qcom/Makefile b/arch/arm64/boot/dts/qcom/Makefile
+index f06c873fce0e..add2d50295eb 100644
+--- a/arch/arm64/boot/dts/qcom/Makefile
++++ b/arch/arm64/boot/dts/qcom/Makefile
+@@ -415,6 +415,7 @@ talos-evk-lvds-auo,g133han01-dtbs	:= \
+ 	talos-evk.dtb talos-evk-lvds-auo,g133han01.dtbo
+ dtb-$(CONFIG_ARCH_QCOM)	+= talos-evk-camera-imx577.dtb
+ dtb-$(CONFIG_ARCH_QCOM)	+= talos-evk-lvds-auo,g133han01.dtb
++dtb-$(CONFIG_ARCH_QCOM) += talos-lyra-evk.dtb
+ x1e001de-devkit-el2-dtbs	:= x1e001de-devkit.dtb x1-el2.dtbo
+ dtb-$(CONFIG_ARCH_QCOM)	+= x1e001de-devkit.dtb x1e001de-devkit-el2.dtb
+ x1e78100-lenovo-thinkpad-t14s-el2-dtbs	:= x1e78100-lenovo-thinkpad-t14s.dtb x1-el2.dtbo
+diff --git a/arch/arm64/boot/dts/qcom/talos-lyra-evk.dts b/arch/arm64/boot/dts/qcom/talos-lyra-evk.dts
+new file mode 100644
+index 000000000000..9ed48765ae6e
+--- /dev/null
++++ b/arch/arm64/boot/dts/qcom/talos-lyra-evk.dts
+@@ -0,0 +1,195 @@
++// SPDX-License-Identifier: BSD-3-Clause
++/*
++ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
++ */
++/dts-v1/;
++
++#include "talos-evk-som.dtsi"
++#include <dt-bindings/sound/qcom,q6afe.h>
++
++/ {
++	model = "Qualcomm QCS615 IQ 615 EVK";
++	compatible = "qcom,talos-evk", "qcom,qcs615", "qcom,sm6150";
++	chassis-type = "embedded";
++
++	aliases {
++		mmc1 = &sdhc_2;
++	};
++
++	dp0-connector {
++		compatible = "dp-connector";
++		label = "DP0";
++		type = "full-size";
++
++		hpd-gpios = <&tlmm 104 GPIO_ACTIVE_HIGH>;
++
++		port {
++			dp0_connector_in: endpoint {
++				remote-endpoint = <&mdss_dp0_out>;
++			};
++		};
++	};
++
++	hdmi_connector: hdmi-out {
++		compatible = "hdmi-connector";
++		type = "d";
++
++		port {
++			hdmi_con_out: endpoint {
++			remote-endpoint = <&adv7535_out>;
++			};
++		};
++	};
++
++	sound {
++		compatible = "qcom,qcs615-sndcard";
++		model = "TALOS-EVK";
++
++		pinctrl-0 = <&mi2s1_pins>, <&mi2s_mclk>;
++		pinctrl-names = "default";
++
++		pri-mi2s-capture-dai-link {
++			link-name = "Primary MI2S Capture";
++
++			codec {
++				sound-dai = <&codec_da7212>;
++			};
++
++			cpu {
++				sound-dai = <&q6apmbedai PRIMARY_MI2S_TX>;
++			};
++
++			platform {
++				sound-dai = <&q6apm>;
++			};
++		};
++
++		pri-mi2s-playback-dai-link {
++			link-name = "Primary MI2S Playback";
++
++			codec {
++				sound-dai = <&codec_da7212>;
++			};
++
++			cpu {
++				sound-dai = <&q6apmbedai PRIMARY_MI2S_RX>;
++			};
++
++			platform {
++				sound-dai = <&q6apm>;
++			};
++		};
++	};
++
++	vreg_v1p8_out: regulator-v1p8-out {
++		compatible = "regulator-fixed";
++		regulator-name = "vreg-v1p8-out";
++		regulator-min-microvolt = <1800000>;
++		regulator-max-microvolt = <1800000>;
++		vin-supply = <&vreg_v5p0_out>;
++		regulator-boot-on;
++		regulator-always-on;
++	};
++
++	vreg_v3p3_out: regulator-v3p3-out {
++		compatible = "regulator-fixed";
++		regulator-name = "vreg-v3p3-out";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		vin-supply = <&vreg_v5p0_out>;
++		regulator-boot-on;
++		regulator-always-on;
++	};
++
++	vreg_v5p0_out: regulator-v5p0-out {
++		compatible = "regulator-fixed";
++		regulator-name = "vreg-v5p0-out";
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		regulator-boot-on;
++		regulator-always-on;
++		/* Powered by system 20V rail (USBC_VBUS_IN) */
++	};
++};
++
++&i2c1 {
++	clock-frequency = <400000>;
++	status = "okay";
++
++	hdmi_bridge: bridge@3d {
++		compatible = "adi,adv7535";
++		reg = <0x3d>;
++		avdd-supply = <&vreg_v1p8_out>;
++		dvdd-supply = <&vreg_v1p8_out>;
++		pvdd-supply = <&vreg_v1p8_out>;
++		a2vdd-supply = <&vreg_v1p8_out>;
++		v3p3-supply = <&vreg_v3p3_out>;
++		interrupts-extended = <&tlmm 26 IRQ_TYPE_LEVEL_LOW>;
++		adi,dsi-lanes = <4>;
++
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			port@0 {
++				reg = <0>;
++
++				adv7535_in: endpoint {
++					remote-endpoint = <&mdss_dsi0_out>;
++				};
++			};
++
++			port@1 {
++				reg = <1>;
++
++				adv7535_out: endpoint {
++					remote-endpoint = <&hdmi_con_out>;
++				};
++			};
++		};
++	};
++};
++
++&i2c5 {
++	status = "okay";
++
++	codec_da7212: codec@1a {
++		compatible = "dlg,da7212";
++		reg = <0x1a>;
++		#sound-dai-cells = <0>;
++		clocks = <&q6prmcc LPASS_CLK_ID_MCLK_2 LPASS_CLK_ATTRIBUTE_COUPLE_NO>;
++		clock-names = "mclk";
++		VDDA-supply = <&vreg_v1p8_out>;
++		VDDIO-supply = <&vreg_v1p8_out>;
++		VDDMIC-supply = <&vreg_v3p3_out>;
++	};
++};
++
++&mdss_dsi0_out {
++	remote-endpoint = <&adv7535_in>;
++	data-lanes = <0 1 2 3>;
++};
++
++&pon_pwrkey {
++	status = "okay";
++};
++
++&pon_resin {
++	linux,code = <KEY_VOLUMEDOWN>;
++
++	status = "okay";
++};
++
++&sdhc_2 {
++	pinctrl-0 = <&sdc2_state_on>;
++	pinctrl-1 = <&sdc2_state_off>;
++	pinctrl-names = "default", "sleep";
++
++	bus-width = <4>;
++	cd-gpios = <&tlmm 99 GPIO_ACTIVE_LOW>;
++
++	vmmc-supply = <&vreg_l10a>;
++	vqmmc-supply = <&vreg_l2a>;
++
++	status = "okay";
++};
+-- 
+2.34.1
