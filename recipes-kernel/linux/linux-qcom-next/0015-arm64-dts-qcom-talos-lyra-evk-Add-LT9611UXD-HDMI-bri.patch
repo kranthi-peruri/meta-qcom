@@ -1,0 +1,144 @@
+From a006a798f48aa13f59e49c75cba80df18441e0db Mon Sep 17 00:00:00 2001
+From: Mohit Dsor <mohit.dsor@oss.qualcomm.com>
+Date: Sat, 1 Aug 2026 04:16:19 +0530
+Subject: [PATCH 07/10] arm64: dts: qcom: talos-lyra-evk: Add LT9611UXD HDMI
+ bridge support
+
+Added LT9611UXD DSI to HDMI bridge node with dual DSI ports, regulators,
+reset GPIO, and IRQ on I2C2 at address 0x41.
+
+Signed-off-by: Mohit Dsor <mohit.dsor@oss.qualcomm.com>
+Upstream-Status: Pending
+---
+ arch/arm64/boot/dts/qcom/talos-lyra-evk.dts | 94 +++++++++++++++++++++
+ 1 file changed, 94 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/talos-lyra-evk.dts b/arch/arm64/boot/dts/qcom/talos-lyra-evk.dts
+index a13ae10daa3c..8820886b2101 100644
+--- a/arch/arm64/boot/dts/qcom/talos-lyra-evk.dts
++++ b/arch/arm64/boot/dts/qcom/talos-lyra-evk.dts
+@@ -4,6 +4,7 @@
+  */
+ /dts-v1/;
+ 
++#include <dt-bindings/pinctrl/qcom,pmic-gpio.h>
+ #include "talos-lyra-som.dtsi"
+ 
+ / {
+@@ -76,6 +77,65 @@ m2_e_uart_ep: endpoint@0 {
+ 			};
+ 		};
+ 	};
++
++	hdmi-connector {
++		compatible = "hdmi-connector";
++                type = "a";
++
++                port {
++                        hdmi_con: endpoint {
++                                remote-endpoint = <&lt9611_out>;
++			};
++		};
++	};
++
++	vreg_lt9611_vcc: regulator-lt9611-vcc {
++		compatible = "regulator-fixed";
++		regulator-name = "lt9611_vcc";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&tlmm 3 GPIO_ACTIVE_HIGH>;
++		enable-active-high;
++		pinctrl-0 = <&lt9611_vcc_pin>;
++		pinctrl-names = "default";
++	};
++};
++
++&i2c2 {
++	status = "okay";
++
++	lt9611uxd: lt9611uxd@41 {
++		compatible = "lontium,lt9611uxd";
++		reg = <0x41>;
++		interrupts-extended = <&tlmm 60 IRQ_TYPE_EDGE_FALLING>;
++		reset-gpios = <&tlmm 61 GPIO_ACTIVE_LOW>;
++		vcc-supply = <&vreg_lt9611_vcc>;
++		vdd-supply = <&vreg_s4a>;
++
++		pinctrl-0 = <&lt9611_irq_pin &lt9611_rst_pin>;
++		pinctrl-names = "default";
++
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			port@0 {
++				reg = <0>;
++
++				lt9611_a: endpoint {
++					remote-endpoint = <&mdss_dsi0_out>;
++				};
++			};
++
++			port@2 {
++				reg = <2>;
++
++				lt9611_out: endpoint {
++					remote-endpoint = <&hdmi_con>;
++				};
++			};
++		};
++	};
+ };
+ 
+ &mdss {
+@@ -137,6 +197,19 @@ &gpu_zap_shader {
+ 	firmware-name = "qcom/qcs615/a612_zap.mbn";
+ };
+ 
++&mdss_dsi0 {
++	status = "okay";
++};
++
++&mdss_dsi0_out {
++	remote-endpoint = <&lt9611_a>;
++	data-lanes = <0 1 2 3>;
++};
++
++&mdss_dsi0_phy {
++	status = "okay";
++};
++
+ &pon_pwrkey {
+ 	status = "okay";
+ };
+@@ -165,6 +238,27 @@ wcn_bt_en: wcn-bt-en-state {
+ 		drive-strength = <2>;
+ 		bias-disable;
+ 	};
++
++	lt9611_irq_pin: lt9611-irq-state {
++		pins = "gpio60";
++		function = "gpio";
++		drive-strength = <2>;
++		bias-disable;
++	};
++
++	lt9611_rst_pin: lt9611-rst-state {
++		pins = "gpio61";
++		function = "gpio";
++		drive-strength = <8>;
++		bias-disable;
++	};
++
++	lt9611_vcc_pin: lt9611-vcc-state {
++		pins = "gpio3";
++		function = "gpio";
++		drive-strength = <8>;
++		bias-disable;
++	};
+ };
+ 
+ &uart7 {
+-- 
+2.34.1
+

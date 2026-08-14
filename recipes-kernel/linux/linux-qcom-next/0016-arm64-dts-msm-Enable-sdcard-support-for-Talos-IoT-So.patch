@@ -1,0 +1,49 @@
+From 780d90e77097301d3b3eb9bd260a1de0b7fdd9b4 Mon Sep 17 00:00:00 2001
+From: Monish Chunara <monish.chunara@oss.qualcomm.com>
+Date: Wed, 5 Aug 2026 14:30:56 +0530
+Subject: [PATCH 08/10] arm64: dts: msm: Enable sdcard support for Talos IoT
+ SoM
+
+Enable sdcard support for Talos IoT SoM.
+
+Upstream-Status: Pending
+
+Signed-off-by: Sayali Lokhande <sayalil@qti.qualcomm.com>
+Signed-off-by: Monish Chunara <monish.chunara@oss.qualcomm.com>
+---
+ arch/arm64/boot/dts/qcom/talos-lyra-som.dtsi | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/talos-lyra-som.dtsi b/arch/arm64/boot/dts/qcom/talos-lyra-som.dtsi
+index 7c95130b68ce..0507f1dc4b91 100644
+--- a/arch/arm64/boot/dts/qcom/talos-lyra-som.dtsi
++++ b/arch/arm64/boot/dts/qcom/talos-lyra-som.dtsi
+@@ -12,6 +12,7 @@ / {
+ 	aliases {
+ 		serial0 = &uart0;
+ 		mmc0 = &sdhc_1;
++		mmc1 = &sdhc_2;
+ 	};
+ 
+ 	chosen {
+@@ -420,3 +421,17 @@ &ufs_mem_phy {
+ &venus {
+ 	status = "okay";
+ };
++
++&sdhc_2 {
++	pinctrl-0 = <&sdc2_state_on>;
++	pinctrl-1 = <&sdc2_state_off>;
++	pinctrl-names = "default", "sleep";
++
++	bus-width = <4>;
++	cd-gpios = <&tlmm 99 GPIO_ACTIVE_LOW>;
++
++	vmmc-supply = <&vreg_l10a>;
++	vqmmc-supply = <&vreg_s4a>;
++
++	status = "okay";
++};
+-- 
+2.34.1
+
