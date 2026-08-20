@@ -1,0 +1,26 @@
+From f45547365f5d98deb506c14162188c6cdc20a651 Mon Sep 17 00:00:00 2001
+From: Kranthi Peruri <kperuri@qti.qualcomm.com>
+Date: Thu, 20 Aug 2026 16:28:45 +0530
+Subject: [PATCH] linux-qcom-next: Ethernet driver fix
+
+Upstream-Status: Pending
+---
+ drivers/net/ethernet/stmicro/stmmac/dwmac-qcom-ethqos.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-qcom-ethqos.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-qcom-ethqos.c
+index 59fa8779e4e4..3ab87d8a8195 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/dwmac-qcom-ethqos.c
++++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-qcom-ethqos.c
+@@ -557,6 +557,8 @@ static void ethqos_rgmii_id_macro_init(struct qcom_ethqos *ethqos, int speed)
+ 
+ 	if (!ethqos->rgmii_config_loopback_en)
+ 		rgmii_clrmask(ethqos, RGMII_CONFIG_LOOPBACK_EN, RGMII_IO_MACRO_CONFIG);
++	else
++		rgmii_setmask(ethqos, RGMII_CONFIG_LOOPBACK_EN, RGMII_IO_MACRO_CONFIG);
+ 
+ 	rgmii_setmask(ethqos, RGMII_CONFIG2_RX_PROG_SWAP, RGMII_IO_MACRO_CONFIG2);
+ }
+-- 
+2.34.1
+

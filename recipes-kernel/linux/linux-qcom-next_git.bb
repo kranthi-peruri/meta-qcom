@@ -26,6 +26,31 @@ SRC_URI = "git://github.com/qualcomm-linux/kernel.git;${SRCBRANCH};protocol=http
 SRC_URI += " \
     file://configs/bsp-additions.cfg \
     file://0001-PENDING-arm64-dts-qcom-talos-evk-add-QPS615-m.2-ethe.patch \
+    file://0001-arm64-dts-qcom-add-talos-iot-som-platform.patch \
+    file://0002-arm64-dts-qcom-add-talos-lyra-evk-board.patch \
+    file://0003-dt-bindings-arm-qcom-add-talos-lyra-evk-board.patch \
+    file://0004-arm64-dts-qcom-talos-lyra-evk-Enable-USB-controllers.patch \
+    file://0005-arm64-dts-qcom-Enable-UFS-support-for-Talos-IoT-SoM.patch \
+    file://0006-arm64-dts-qcom-Enable-eMMC-support-for-Talos-IoT-SoM.patch \
+    file://0007-arm64-dts-qcom-talos-lyra-evk-Enable-Native-DP.patch \
+    file://0008-arm64-dts-qcom-talos-lyra-evk-Add-I2C-GPIO-expanders.patch \
+    file://0009-arm64-dts-qcom-talos-lyra-evk-Enable-PCIe-Support.patch \
+    file://0010-arm64-dts-qcom-talos-lyra-evk-Enable-M.2-Key-E-Colog.patch \
+    file://0011-arm64-dts-qcom-talos-lyra-evk-Enable-GPU.patch \
+    file://0012-drm-bridge-Add-new-atomic_create_state-callback.patch \
+    file://0013-drm-atomic-state-helper-Add-drm_atomic_helper_bridge.patch \
+    file://0014_1-drm-bridge-lontium-add-LT9611C-EX-UXD-DSI-to-HDMI-br.patch \
+    file://0014_2-drm-bridge-add-of_drm_get_bridge_by_endpoint.patch \
+    file://0015-arm64-dts-qcom-talos-lyra-evk-Add-LT9611UXD-HDMI-bri.patch \
+    file://0016-arm64-dts-msm-Enable-sdcard-support-for-Talos-IoT-So.patch \
+    file://0017-arm64-dts-qcom-Add-Camera-DT-changes-for-Talos-Lyra-.patch \
+    file://0018-arm64-dts-qcom-Add-IMX577-Camera-DT-changes-for-Talo.patch \
+    file://0019-arm64-dts-qcom-talos-lyra-evk-Enable-TPM-ST33.patch \
+    file://0020-arm64-dts-qcom-add-Talos-Lyra-EVK-DTS-for-ethernet-c.patch \
+    file://0021-linux-qcom-next-Ethernet-driver-fix.patch \
+    file://0025-pinctrl-qcom-add-lpi-pinctrl-driver-for-talos-lyra-e.patch \
+    file://0023-arm64-dts-qcom-talos-lyra-evk-enable-audio-support.patch \
+    file://0026-ASoC-qcom-sc8280xp-enable-support-for-talos-lyra.patch \
 "
 
 # To build tip of qcom-next branch set preferred

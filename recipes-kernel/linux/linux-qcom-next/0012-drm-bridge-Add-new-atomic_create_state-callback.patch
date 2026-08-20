@@ -1,0 +1,50 @@
+From ed1c198d55ad7462ec1087e489a158745ab683ab Mon Sep 17 00:00:00 2001
+From: Maxime Ripard <mripard@kernel.org>
+Date: Fri, 19 Jun 2026 14:24:11 +0200
+Subject: [PATCH 04/10] drm/bridge: Add new atomic_create_state callback
+
+Commit 47b5ac7daa46 ("drm/atomic: Add new atomic_create_state callback
+to drm_private_obj") introduced a new pattern for allocating drm object
+states: atomic_create_state, a dedicated hook that allocates and
+initializes a pristine state without any side effect.
+
+The bridge atomic_reset callback is already fallible and in practice
+only allocates and initializes state without touching hardware.
+However, the reset name does not make this contract clear: callers
+and implementers cannot tell from the name alone whether the hardware
+will be affected or when the hook is safe to call.
+
+Add an atomic_create_state callback to drm_bridge_funcs to make the
+contract explicit: allocate a pristine state, initialize it, no side
+effects. The core calls it when available, falling back to
+atomic_reset otherwise.
+
+Upstream-Status: Inappropriate [debug specific]
+Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
+Reviewed-by: Luca Ceresoli <luca.ceresoli@bootlin.com>
+Tested-by: Luca Ceresoli <luca.ceresoli@bootlin.com> # imx8mp + sn65dsi84 + bridge hotplug
+Link: https://patch.msgid.link/20260619-drm-no-more-bridge-reset-v3-6-ff399263111b@kernel.org
+Signed-off-by: Maxime Ripard <mripard@kernel.org>
+---
+ drivers/gpu/drm/drm_atomic_state_helper.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/drm_atomic_state_helper.c b/drivers/gpu/drm/drm_atomic_state_helper.c
+index cc70508d4fdb..687fa2bf1fa8 100644
+--- a/drivers/gpu/drm/drm_atomic_state_helper.c
++++ b/drivers/gpu/drm/drm_atomic_state_helper.c
+@@ -818,8 +818,9 @@ EXPORT_SYMBOL(drm_atomic_helper_bridge_destroy_state);
+  * @state: bridge state to initialize
+  *
+  * Initializes the bridge state to default values. This is meant to be called
+- * by the bridge &drm_bridge_funcs.atomic_reset hook for bridges that subclass
+- * the bridge state.
++ * by the bridge &drm_bridge_funcs.atomic_create_state or
++ * &drm_bridge_funcs.atomic_reset hook for bridges that subclass the bridge
++ * state.
+  */
+ void __drm_atomic_helper_bridge_reset(struct drm_bridge *bridge,
+ 				      struct drm_bridge_state *state)
+-- 
+2.34.1
+

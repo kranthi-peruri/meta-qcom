@@ -1,0 +1,35 @@
+From 07e3322cd2867682be388c0d321fcab82857f8fd Mon Sep 17 00:00:00 2001
+From: Kishor Buchi <kbuchi@qti.qualcomm.com>
+Date: Wed, 29 Jul 2026 14:43:18 +0530
+Subject: [PATCH 03/10] arm64: dts: qcom: talos-lyra-evk: Enable GPU
+
+Enable GPU for Talos Lyra EVK
+
+Upstream-Status: Pending
+
+Signed-off-by: Kishor Buchi <kbuchi@qti.qualcomm.com>
+---
+ arch/arm64/boot/dts/qcom/talos-lyra-evk.dts | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/talos-lyra-evk.dts b/arch/arm64/boot/dts/qcom/talos-lyra-evk.dts
+index e51954265555..a13ae10daa3c 100644
+--- a/arch/arm64/boot/dts/qcom/talos-lyra-evk.dts
++++ b/arch/arm64/boot/dts/qcom/talos-lyra-evk.dts
+@@ -127,6 +127,14 @@ expander3: gpio@3c {
+ 		gpio-controller;
+ 		#gpio-cells = <2>;
+ 	};
++};
++
++&gpu {
++	status = "okay";
++};
++
++&gpu_zap_shader {
++	firmware-name = "qcom/qcs615/a612_zap.mbn";
+ };
+ 
+ &pon_pwrkey {
+-- 
+2.34.1

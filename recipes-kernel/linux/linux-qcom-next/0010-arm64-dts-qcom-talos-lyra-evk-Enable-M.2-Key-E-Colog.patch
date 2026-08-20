@@ -1,0 +1,200 @@
+From 8291f5e089534041f67e07f2d84b28258eeffa78 Mon Sep 17 00:00:00 2001
+From: Wei Deng <wei.deng@oss.qualcomm.com>
+Date: Fri, 14 Aug 2026 11:16:43 +0530
+Subject: [PATCH 02/10] arm64: dts: qcom: talos-lyra-evk: Enable M.2 Key-E
+ Cologne WiFi/BT
+
+Add support for the M.2 Key-E Cologne (QCC2072) wireless solution on
+the Talos Lyra EVK. The M.2 Key-E slot is connected via the QPS615
+PCIe switch (TC9563) PCIe1 Downstream port for WiFi, and via SoC UART7
+(GPIO10-13) for Bluetooth.
+
+- talos.dtsi: Add OF graph endpoint (uart7_ep) to uart7 node to
+  describe the UART interface exposed on the M.2 Key-E connector
+
+- talos-lyra-som.dtsi: Add compatible = "pciclass,0604" and OF graph
+  endpoint (tc9563_pcie1_ep) to the QPS615 PCIe1 Downstream port
+  (pcie@1,0) to allow PCI subsystem DT node matching for pwrseq
+
+- talos-lyra-evk.dts: Replace on-module WCN3988 with M.2 Cologne:
+  - Add GPIO-controlled vreg_keye_3p3 regulator via expander3 GPIO6
+  - Add expander3 (TCA9538 at 0x3c) for M.2 Key-E slot power control
+  - Add wifi-bt-connector (pcie-m2-e-connector) with vpcie3v3-supply,
+    w-disable1 (GPIO51) for WiFi and w-disable2 (GPIO85) for BT
+  - Wire endpoint cross-references via &tc9563_pcie1_ep and &uart7_ep
+
+- pwrseq-pcie-m2.c: Add PCI device ID 0x1112 for qcom,qcc2072-bt to
+  enable power sequencing for the QCC2072 Bluetooth controller
+
+Signed-off-by: Wei Deng <wei.deng@oss.qualcomm.com>
+Upstream-Status: Pending
+---
+ arch/arm64/boot/dts/qcom/talos-lyra-evk.dts  | 87 ++++++++++++++++++++
+ arch/arm64/boot/dts/qcom/talos-lyra-som.dtsi |  5 ++
+ arch/arm64/boot/dts/qcom/talos.dtsi          |  4 +
+ drivers/power/sequencing/pwrseq-pcie-m2.c    |  2 +
+ 4 files changed, 98 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/talos-lyra-evk.dts b/arch/arm64/boot/dts/qcom/talos-lyra-evk.dts
+index db57223ff536..e51954265555 100644
+--- a/arch/arm64/boot/dts/qcom/talos-lyra-evk.dts
++++ b/arch/arm64/boot/dts/qcom/talos-lyra-evk.dts
+@@ -24,6 +24,58 @@ dp0_connector_in: endpoint {
+                         };
+                 };
+         };
++
++	aliases {
++		serial1 = &uart7;
++	};
++
++	vreg_keye_3p3: regulator-keye-3p3 {
++		compatible = "regulator-fixed";
++		regulator-name = "vreg_keye_3p3";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&expander3 6 GPIO_ACTIVE_HIGH>;
++		enable-active-high;
++		regulator-boot-on;
++	};
++
++	wifi-bt-connector {
++		compatible = "pcie-m2-e-connector";
++		vpcie3v3-supply = <&vreg_keye_3p3>;
++
++		w-disable1-gpios = <&tlmm 51 GPIO_ACTIVE_LOW>;
++		w-disable2-gpios = <&tlmm 85 GPIO_ACTIVE_LOW>;
++
++		pinctrl-0 = <&wcn_wlan_en>, <&wcn_bt_en>;
++		pinctrl-names = "default";
++
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			port@0 {
++				reg = <0>;
++				#address-cells = <1>;
++				#size-cells = <0>;
++
++				m2_e_pcie_ep: endpoint@0 {
++					reg = <0>;
++					remote-endpoint = <&tc9563_pcie1_ep>;
++				};
++			};
++
++			port@3 {
++				reg = <3>;
++				#address-cells = <1>;
++				#size-cells = <0>;
++
++				m2_e_uart_ep: endpoint@0 {
++					reg = <0>;
++					remote-endpoint = <&uart7_ep>;
++				};
++			};
++		};
++	};
+ };
+ 
+ &mdss {
+@@ -68,6 +120,13 @@ expander2: gpio@38 {
+ 		#interrupt-cells = <2>;
+ 		interrupt-controller;
+ 	};
++
++	expander3: gpio@3c {
++		compatible = "ti,tca9538";
++		reg = <0x3c>;
++		gpio-controller;
++		#gpio-cells = <2>;
++	};
+ };
+ 
+ &pon_pwrkey {
+@@ -80,6 +139,34 @@ &pon_resin {
+ 	status = "okay";
+ };
+ 
++&tc9563_pcie1_ep {
++	remote-endpoint = <&m2_e_pcie_ep>;
++};
++
++&tlmm {
++	wcn_wlan_en: wcn-wlan-en-state {
++		pins = "gpio51";
++		function = "gpio";
++		drive-strength = <2>;
++		bias-disable;
++	};
++
++	wcn_bt_en: wcn-bt-en-state {
++		pins = "gpio85";
++		function = "gpio";
++		drive-strength = <2>;
++		bias-disable;
++	};
++};
++
++&uart7 {
++	status = "okay";
++};
++
++&uart7_ep {
++	remote-endpoint = <&m2_e_uart_ep>;
++};
++
+ &usb_1_hsphy {
+ 	vdd-supply = <&vreg_l5a>;
+ 	vdda-pll-supply = <&vreg_l12a>;
+diff --git a/arch/arm64/boot/dts/qcom/talos-lyra-som.dtsi b/arch/arm64/boot/dts/qcom/talos-lyra-som.dtsi
+index 5dad95c68cf4..7c95130b68ce 100644
+--- a/arch/arm64/boot/dts/qcom/talos-lyra-som.dtsi
++++ b/arch/arm64/boot/dts/qcom/talos-lyra-som.dtsi
+@@ -280,12 +280,17 @@ pcie@1,0 {
+ 			reg = <0x20800 0x0 0x0 0x0 0x0>;
+ 			#address-cells = <3>;
+ 			#size-cells = <2>;
++			compatible = "pciclass,0604";
+ 			device_type = "pci";
+ 			ranges;
+ 			bus-range = <0x3 0xff>;
+ 
+ 			ep-pwr-en-gpio = <&tc9563 2 GPIO_ACTIVE_HIGH>;
+ 			ep-reset-gpio = <&tc9563 5 GPIO_ACTIVE_HIGH>;
++
++			port {
++				tc9563_pcie1_ep: endpoint {};
++			};
+ 		};
+ 
+ 		pcie@2,0 {
+diff --git a/arch/arm64/boot/dts/qcom/talos.dtsi b/arch/arm64/boot/dts/qcom/talos.dtsi
+index fb1bbc51bb8a..52d8f092b6ac 100644
+--- a/arch/arm64/boot/dts/qcom/talos.dtsi
++++ b/arch/arm64/boot/dts/qcom/talos.dtsi
+@@ -1260,6 +1260,10 @@ uart7: serial@a8c000 {
+ 				power-domains = <&rpmhpd RPMHPD_CX>;
+ 				operating-points-v2 = <&qup_opp_table>;
+ 				status = "disabled";
++
++				port {
++					uart7_ep: endpoint {};
++				};
+ 			};
+ 		};
+ 
+diff --git a/drivers/power/sequencing/pwrseq-pcie-m2.c b/drivers/power/sequencing/pwrseq-pcie-m2.c
+index ddfe6ca82494..b9fb10901b14 100644
+--- a/drivers/power/sequencing/pwrseq-pcie-m2.c
++++ b/drivers/power/sequencing/pwrseq-pcie-m2.c
+@@ -188,5 +188,7 @@ static const struct pci_device_id pwrseq_m2_pci_ids[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_QCOM, 0x1107),
+ 	  .driver_data = (kernel_ulong_t)"qcom,wcn7850-bt" },
++	{ PCI_DEVICE(PCI_VENDOR_ID_QCOM, 0x1112),
++	  .driver_data = (kernel_ulong_t)"qcom,qcc2072-bt" },
+ 	{ } /* Sentinel */
+ };
+ 
+-- 
+2.34.1
