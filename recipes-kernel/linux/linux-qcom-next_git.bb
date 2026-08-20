@@ -46,6 +46,7 @@ SRC_URI += " \
     file://0017-arm64-dts-qcom-Add-Camera-DT-changes-for-Talos-Lyra-.patch \
     file://0018-arm64-dts-qcom-Add-IMX577-Camera-DT-changes-for-Talo.patch \
     file://0019-arm64-dts-qcom-talos-lyra-evk-Enable-TPM-ST33.patch \
+    file://0020-arm64-dts-qcom-add-Talos-Lyra-EVK-DTS-for-ethernet-c.patch \
 "
 
 # To build tip of qcom-next branch set preferred
