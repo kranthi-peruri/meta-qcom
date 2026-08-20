@@ -1,0 +1,194 @@
+From 1f4189bd95cf44c87df72aa21f503022e9a6ebca Mon Sep 17 00:00:00 2001
+From: Karthik S <karthik.s@oss.qualcomm.com>
+Date: Thu, 20 Aug 2026 17:00:08 +0530
+Subject: [PATCH 2/3] arm64: dts: qcom: talos-lyra-evk: enable audio support
+
+enable playback and capture over max98091 codec interfaces
+for talos-lyra-evk platform.
+
+Upstream-Status: Pending
+
+Signed-off-by: Karthik S <karthik.s@oss.qualcomm.com>
+---
+ arch/arm64/boot/dts/qcom/talos-lyra-evk.dts  | 131 ++++++++++++++++++-
+ arch/arm64/boot/dts/qcom/talos-lyra-som.dtsi |   1 +
+ 2 files changed, 131 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/qcom/talos-lyra-evk.dts b/arch/arm64/boot/dts/qcom/talos-lyra-evk.dts
+index 615ed3f2037d..886fde5b20c4 100644
+--- a/arch/arm64/boot/dts/qcom/talos-lyra-evk.dts
++++ b/arch/arm64/boot/dts/qcom/talos-lyra-evk.dts
+@@ -12,6 +12,46 @@ / {
+ 	compatible = "qcom,talos-lyra-evk", "qcom,qcs615", "qcom,sm6150";
+ 	chassis-type = "embedded";
+ 
++	sound {
++                compatible = "qcom,qcs615-sndcard";
++                model = "qcs615-snd-card";
++
++                pinctrl-names = "default";
++                pinctrl-0 = <&lpi_spkr_i2s_mclk_a>, <&lpi_i2s1_clk>, <&lpi_i2s1_data>, <&lpi_i2s1_ws>;
++
++                sec-mi2s-playback-dai-link {
++                        link-name = "Secondary MI2S Playback";
++
++                        cpu {
++                                sound-dai = <&q6apmbedai SECONDARY_MI2S_RX>;
++                        };
++
++                        codec {
++                                sound-dai = <&max98091>;
++                        };
++
++                        platform {
++                                sound-dai = <&q6apm>;
++                        };
++                };
++
++                sec-mi2s-capture-dai-link {
++                        link-name = "Secondary MI2S Capture";
++
++                        cpu {
++                                sound-dai = <&q6apmbedai SECONDARY_MI2S_TX>;
++                        };
++
++                        codec {
++                                sound-dai = <&max98091>;
++                        };
++
++                        platform {
++                                sound-dai = <&q6apm>;
++                        };
++                };
++        };	
++
+ 	dp0-connector {
+                 compatible = "dp-connector";
+                 label = "DP0";
+@@ -195,7 +235,20 @@ expander3: gpio@3c {
+ 		gpio-controller;
+ 		#gpio-cells = <2>;
+ 	};
+-};
++
++	max98091: max98091@10 {
++                compatible = "maxim,max98091";
++                reg = <0x10>;
++                #sound-dai-cells = <0>;
++                clock-names = "mclk";
++                clocks = <&q6prmcc LPASS_CLK_ID_SPEAKER_I2S_OSR LPASS_CLK_ATTRIBUTE_COUPLE_NO>;
++                interrupt-parent = <&tlmm>;
++                interrupts = <119 IRQ_TYPE_NONE>;
++                pinctrl-names = "default";
++                pinctrl-0 = <&int_codec>;
++        };
++};
++
+ 
+ &gpu {
+ 	status = "okay";
+@@ -228,6 +281,81 @@ &pon_resin {
+ 	status = "okay";
+ };
+ 
++&tlmm {
++        int_codec: gpio-irq-state {
++                pins = "gpio119";
++                function = "gpio";
++        };
++};
++
++&soc {
++        lpass_tlmm: pinctrl@62B40000 {
++                compatible = "qcom,qcs615-lpass-lpi-pinctrl";
++                reg = <0x0 0x62B40000 0x0 0x20000>,
++                      <0x0 0x62B00000 0x0 0x10000>;
++
++                clocks = <&q6prmcc LPASS_HW_MACRO_VOTE LPASS_CLK_ATTRIBUTE_COUPLE_NO>,
++                        <&q6prmcc LPASS_HW_DCODEC_VOTE LPASS_CLK_ATTRIBUTE_COUPLE_NO>;
++                clock-names = "core", "audio";
++
++                gpio-controller;
++                #gpio-cells = <2>;
++                gpio-ranges = <&lpass_tlmm 0 0 32>;
++        };
++};
++
++&lpass_tlmm {
++        lpi_spkr_i2s_mclk_a: lpi-spkr-i2s-mclk-a-state {
++                pins = "gpio19";
++                function = "spkr_i2s_mclk_a";
++                drive-strength = <16>;
++                bias-disable;
++                output-high;
++        };
++        lpi_i2s1_clk: lpi-i2s1-clk-state {
++                pins = "gpio8";
++                function = "i2s1_clk";
++                drive-strength = <8>;
++                bias-disable;
++                output-high;
++        };
++        lpi_i2s1_clk_sleep: lpi-i2s1-clk-sleep-state {
++                pins = "gpio8";
++                function = "i2s1_clk";
++                drive-strength = <2>;
++                bias-pull-down;
++                input-enable;
++        };
++        lpi_i2s1_data: lpi-i2s1-data-state {
++                pins = "gpio10", "gpio11";
++                function = "i2s1_data";
++                drive-strength = <8>;
++                bias-disable;
++                output-high;
++        };
++        lpi_i2s1_data_sleep: lpi-i2s1-data-sleep-state {
++                pins = "gpio10", "gpio11";
++                function = "i2s1_data";
++                drive-strength = <2>;
++                bias-pull-down;
++                input-enable;
++        };
++        lpi_i2s1_ws: lpi-i2s1-ws-state {
++                pins = "gpio9";
++                function = "i2s1_ws";
++                drive-strength = <8>;
++                bias-disable;
++                output-high;
++        };
++        lpi_i2s1_ws_sleep: lpi-i2s1-ws-sleep-state {
++                pins = "gpio9";
++                function = "i2s1_ws";
++                drive-strength = <2>;
++                bias-pull-down;
++                input-enable;
++        };
++};
++
+ &tc9563_pcie1_ep {
+ 	remote-endpoint = <&m2_e_pcie_ep>;
+ };
+@@ -318,6 +446,7 @@ &usb_2 {
+ 
+ 	status = "okay";
+ };
++
+ &spi6 {
+         status = "okay";
+ 
+diff --git a/arch/arm64/boot/dts/qcom/talos-lyra-som.dtsi b/arch/arm64/boot/dts/qcom/talos-lyra-som.dtsi
+index 8b61aa586a13..6242aee5f5e0 100644
+--- a/arch/arm64/boot/dts/qcom/talos-lyra-som.dtsi
++++ b/arch/arm64/boot/dts/qcom/talos-lyra-som.dtsi
+@@ -6,6 +6,7 @@
+ 
+ #include <dt-bindings/gpio/gpio.h>
+ #include <dt-bindings/regulator/qcom,rpmh-regulator.h>
++#include <dt-bindings/sound/qcom,q6afe.h>
+ #include "talos.dtsi"
+ #include "pm8150.dtsi"
+ / {
+-- 
+2.34.1
+

@@ -48,6 +48,9 @@ SRC_URI += " \
     file://0019-arm64-dts-qcom-talos-lyra-evk-Enable-TPM-ST33.patch \
     file://0020-arm64-dts-qcom-add-Talos-Lyra-EVK-DTS-for-ethernet-c.patch \
     file://0021-linux-qcom-next-Ethernet-driver-fix.patch \
+    file://0025-pinctrl-qcom-add-lpi-pinctrl-driver-for-talos-lyra-e.patch \
+    file://0023-arm64-dts-qcom-talos-lyra-evk-enable-audio-support.patch \
+    file://0026-ASoC-qcom-sc8280xp-enable-support-for-talos-lyra.patch \
 "
 
 # To build tip of qcom-next branch set preferred
