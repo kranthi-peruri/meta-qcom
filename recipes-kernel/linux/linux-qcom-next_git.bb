@@ -29,6 +29,10 @@ SRC_URI = "git://github.com/qualcomm-linux/kernel.git;${SRCBRANCH};protocol=http
 # Additional kernel configs.
 SRC_URI += " \
     file://configs/bsp-additions.cfg \
+    file://0001-dt-bindings-arm-qcom-Add-LeMans-Draco-EVK-compatible.patch \
+    file://0002-arm64-dts-qcom-Add-lemans-draco-evk.dtb-to-Makefile.patch \
+    file://0003-arm64-dts-qcom-Add-LeMans-Draco-EVK-SOM-device-tree.patch \
+    file://0004-arm64-dts-qcom-lemans-draco-evk-add-device-tree-and-.patch \
 "
 
 # To build tip of qcom-next branch set preferred
