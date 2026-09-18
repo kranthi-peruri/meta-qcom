@@ -33,6 +33,7 @@ SRC_URI += " \
     file://0002-arm64-dts-qcom-Add-lemans-draco-evk.dtb-to-Makefile.patch \
     file://0003-arm64-dts-qcom-Add-LeMans-Draco-EVK-SOM-device-tree.patch \
     file://0004-arm64-dts-qcom-lemans-draco-evk-add-device-tree-and-.patch \
+    file://0005-arm64-dts-qcom-lemans-draco-evk-Enable-PCIe.patch \
 "
 
 # To build tip of qcom-next branch set preferred
