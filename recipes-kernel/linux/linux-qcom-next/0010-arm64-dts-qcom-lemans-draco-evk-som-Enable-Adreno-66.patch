@@ -1,0 +1,31 @@
+From c7f7a0dbeb8f3b39ef000787228456871ef878d5 Mon Sep 17 00:00:00 2001
+From: Kishor Buchi <kbuchi@qti.qualcomm.com>
+Date: Fri, 25 Sep 2026 15:41:31 +0530
+Subject: [PATCH 10/15] arm64: dts: qcom: lemans-draco-evk-som: Enable Adreno
+ 663 GPU
+
+Enable GPU for lemans-draco-evk-som platform.
+
+Signed-off-by: Kishor Buchi <kbuchi@qti.qualcomm.com>
+Upstream-Status: Pending
+---
+ arch/arm64/boot/dts/qcom/lemans-draco-evk-som.dtsi | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/lemans-draco-evk-som.dtsi b/arch/arm64/boot/dts/qcom/lemans-draco-evk-som.dtsi
+index 7a011d3a1772..fde57c10080d 100644
+--- a/arch/arm64/boot/dts/qcom/lemans-draco-evk-som.dtsi
++++ b/arch/arm64/boot/dts/qcom/lemans-draco-evk-som.dtsi
+@@ -248,6 +248,10 @@ vreg_l8e: ldo8 {
+ 	};
+ };
+ 
++&gpu {
++	status = "okay";
++};
++
+ &gpu_zap_shader {
+ 	firmware-name = "qcom/sa8775p/a663_zap.mbn";
+ };
+-- 
+2.34.1

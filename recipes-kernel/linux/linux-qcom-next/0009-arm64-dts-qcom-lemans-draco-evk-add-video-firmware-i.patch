@@ -1,0 +1,43 @@
+From e066183583984a7db6b9a8d49ed099ffd2e40eff Mon Sep 17 00:00:00 2001
+From: Sachin Kumar Garg <sachin.garg@oss.qualcomm.com>
+Date: Mon, 28 Sep 2026 15:06:23 +0530
+Subject: [PATCH 09/15] arm64: dts: qcom: lemans-draco-evk: add video-firmware
+ iommu node
+
+lemans-draco-evk-som.dtsi inlines the Lemans EL2-hosting device-tree
+modifications normally applied via the lemans-el2.dtbo overlay, but
+missed the video-firmware child node under &iris that the overlay
+also provides.
+
+Without this node, IRIS has no fw_dev, so it takes the firmware-load
+path meant for boards with an external hypervisor managing the SHM
+bridge. Since Draco hosts EL2 in Linux itself, TrustZone rejects the
+un-bridged firmware buffer with -EINVAL, and IRIS firmware load fails.
+
+Add the missing video-firmware iommu node (same SID as
+lemans-el2.dtso) so firmware loading uses the correct self-managed
+TZMem path on Draco.
+
+Upstream-Status: Pending
+Signed-off-by: Sachin Kumar Garg <sachin.garg@oss.qualcomm.com>
+---
+ arch/arm64/boot/dts/qcom/lemans-draco-evk-som.dtsi | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/lemans-draco-evk-som.dtsi b/arch/arm64/boot/dts/qcom/lemans-draco-evk-som.dtsi
+index 7812d1d24152..7a011d3a1772 100644
+--- a/arch/arm64/boot/dts/qcom/lemans-draco-evk-som.dtsi
++++ b/arch/arm64/boot/dts/qcom/lemans-draco-evk-som.dtsi
+@@ -256,6 +256,10 @@
+ 	firmware-name = "qcom/vpu/vpu30_p4_s6_16mb.mbn";
+ 
+ 	status = "okay";
++
++	video-firmware {
++		iommus = <&apps_smmu 0x0882 0x0400>;
++	};
+ };
+ 
+ &pmm8654au_0_pon_resin {
+-- 
+2.34.1

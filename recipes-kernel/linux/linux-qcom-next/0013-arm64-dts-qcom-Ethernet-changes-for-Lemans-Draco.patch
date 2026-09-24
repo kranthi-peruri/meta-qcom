@@ -1,0 +1,261 @@
+From 1531aabf10099a841c121db9ccd9edfc63d36531 Mon Sep 17 00:00:00 2001
+From: Ajinkya Inchure <ainchure@qti.qualcomm.com>
+Date: Mon, 5 Oct 2026 11:22:41 +0530
+Subject: [PATCH 13/15] arm64: dts: qcom: Ethernet changes for Lemans Draco
+
+Signed-off-by: Ajinkya Inchure <ainchure@qti.qualcomm.com>
+Upstream-Status: Pending
+---
+ arch/arm64/boot/dts/qcom/lemans-draco-evk.dts | 216 ++++++++++++++++++
+ 1 file changed, 216 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/lemans-draco-evk.dts b/arch/arm64/boot/dts/qcom/lemans-draco-evk.dts
+index 966645ca210d..f6ab5a886f9d 100644
+--- a/arch/arm64/boot/dts/qcom/lemans-draco-evk.dts
++++ b/arch/arm64/boot/dts/qcom/lemans-draco-evk.dts
+@@ -13,6 +13,8 @@ / {
+ 	chassis-type = "embedded";
+ 
+ 	aliases {
++		ethernet0 = &ethernet0;
++		ethernet1 = &ethernet1;
+ 		serial1 = &uart17;
+ 	};
+ 
+@@ -201,6 +203,176 @@ m2_e_uart_ep: endpoint@0 {
+ 	};
+ };
+ 
++&ethernet0 {
++	phy-handle = <&hsgmii_phy0>;
++	phy-mode = "2500base-x";
++
++	pinctrl-0 = <&ethernet0_default>;
++	pinctrl-names = "default";
++
++	snps,mtl-rx-config = <&mtl_rx_setup>;
++	snps,mtl-tx-config = <&mtl_tx_setup>;
++
++	status = "okay";
++
++	mdio {
++		compatible = "snps,dwmac-mdio";
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		hsgmii_phy0: ethernet-phy {
++			compatible = "ethernet-phy-id004d.d101";
++			reg = <0x1c>;
++			reset-gpios = <&pmm8654au_2_gpios 8 GPIO_ACTIVE_LOW>;
++			reset-assert-us = <11000>;
++			reset-deassert-us = <70000>;
++		};
++	};
++
++	mtl_rx_setup: rx-queues-config {
++		snps,rx-queues-to-use = <4>;
++		snps,rx-sched-sp;
++
++		queue0 {
++			snps,dcb-algorithm;
++			snps,map-to-dma-channel = <0x0>;
++			snps,route-up;
++			snps,priority = <0x1>;
++		};
++
++		queue1 {
++			snps,dcb-algorithm;
++			snps,map-to-dma-channel = <0x1>;
++			snps,route-ptp;
++		};
++
++		queue2 {
++			snps,avb-algorithm;
++			snps,map-to-dma-channel = <0x2>;
++			snps,route-avcp;
++		};
++
++		queue3 {
++			snps,avb-algorithm;
++			snps,map-to-dma-channel = <0x3>;
++			snps,priority = <0xc>;
++		};
++	};
++
++	mtl_tx_setup: tx-queues-config {
++		snps,tx-queues-to-use = <4>;
++
++		queue0 {
++			snps,dcb-algorithm;
++		};
++
++		queue1 {
++			snps,dcb-algorithm;
++		};
++
++		queue2 {
++			snps,avb-algorithm;
++			snps,send_slope = <0x1000>;
++			snps,idle_slope = <0x1000>;
++			snps,high_credit = <0x3e800>;
++			snps,low_credit = <0xffc18000>;
++		};
++
++		queue3 {
++			snps,avb-algorithm;
++			snps,send_slope = <0x1000>;
++			snps,idle_slope = <0x1000>;
++			snps,high_credit = <0x3e800>;
++			snps,low_credit = <0xffc18000>;
++		};
++	};
++};
++
++&ethernet1 {
++	phy-handle = <&hsgmii_phy1>;
++	phy-mode = "2500base-x";
++
++	pinctrl-0 = <&ethernet1_default>;
++	pinctrl-names = "default";
++
++	snps,mtl-rx-config = <&mtl_rx_setup1>;
++	snps,mtl-tx-config = <&mtl_tx_setup1>;
++
++	status = "okay";
++
++	mdio {
++		compatible = "snps,dwmac-mdio";
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		hsgmii_phy1: ethernet-phy {
++			compatible = "ethernet-phy-id004d.d101";
++			reg = <0x1c>;
++			reset-gpios = <&pmm8654au_2_gpios 9 GPIO_ACTIVE_LOW>;
++			reset-assert-us = <11000>;
++			reset-deassert-us = <70000>;
++		};
++	};
++
++	mtl_rx_setup1: rx-queues-config {
++		snps,rx-queues-to-use = <4>;
++		snps,rx-sched-sp;
++
++		queue0 {
++			snps,dcb-algorithm;
++			snps,map-to-dma-channel = <0x0>;
++			snps,route-up;
++			snps,priority = <0x1>;
++		};
++
++		queue1 {
++			snps,dcb-algorithm;
++			snps,map-to-dma-channel = <0x1>;
++			snps,route-ptp;
++		};
++
++		queue2 {
++			snps,avb-algorithm;
++			snps,map-to-dma-channel = <0x2>;
++			snps,route-avcp;
++		};
++
++		queue3 {
++			snps,avb-algorithm;
++			snps,map-to-dma-channel = <0x3>;
++			snps,priority = <0xc>;
++		};
++	};
++
++	mtl_tx_setup1: tx-queues-config {
++		snps,tx-queues-to-use = <4>;
++
++		queue0 {
++			snps,dcb-algorithm;
++		};
++
++		queue1 {
++			snps,dcb-algorithm;
++		};
++
++		queue2 {
++			snps,avb-algorithm;
++			snps,send_slope = <0x1000>;
++			snps,idle_slope = <0x1000>;
++			snps,high_credit = <0x3e800>;
++			snps,low_credit = <0xffc18000>;
++		};
++
++		queue3 {
++			snps,avb-algorithm;
++			snps,send_slope = <0x1000>;
++			snps,idle_slope = <0x1000>;
++			snps,high_credit = <0x3e800>;
++			snps,low_credit = <0xffc18000>;
++		};
++	};
++};
++
+ &i2c1 {
+ 	status = "okay";
+ 
+@@ -352,6 +524,38 @@ dp3_hot_plug_det: dp3-hot-plug-det-state {
+ 		bias-disable;
+ 	};
+ 
++	ethernet0_default: ethernet0-default-state {
++			ethernet0_mdc: ethernet0-mdc-pins {
++			pins = "gpio8";
++			function = "emac0_mdc";
++			drive-strength = <16>;
++			bias-pull-up;
++		};
++
++		ethernet0_mdio: ethernet0-mdio-pins {
++			pins = "gpio9";
++			function = "emac0_mdio";
++			drive-strength = <16>;
++			bias-pull-up;
++		};
++	};
++
++	ethernet1_default: ethernet1-default-state {
++		ethernet1_mdc: ethernet1-mdc-pins {
++			pins = "gpio20";
++			function = "emac1_mdc";
++			drive-strength = <16>;
++			bias-pull-up;
++		};
++
++		ethernet1_mdio: ethernet1-mdio-pins {
++			pins = "gpio21";
++			function = "emac1_mdio";
++			drive-strength = <16>;
++			bias-pull-up;
++		};
++	};
++
+ 	expander_int: expander-int-state {
+ 		pins = "gpio22";
+ 		function = "gpio";
+@@ -658,6 +862,18 @@ &mdss0_dsi0_phy {
+ 	status = "okay";
+ };
+ 
++&serdes0 {
++	phy-supply = <&vreg_l5a>;
++
++	status = "okay";
++};
++
++&serdes1 {
++	phy-supply = <&vreg_l5a>;
++
++	status = "okay";
++};
++
+ /* DSI1 disabled for single-DSI bringup
+  * &mdss0_dsi1 {
+  *	vdda-supply = <&vreg_l1c>;
+-- 
+2.34.1
