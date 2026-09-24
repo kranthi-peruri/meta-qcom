@@ -1,0 +1,121 @@
+From 486926dd31593d27eb7ec5daa457c22809eaef9d Mon Sep 17 00:00:00 2001
+From: Wei Deng <wei.deng@oss.qualcomm.com>
+Date: Thu, 17 Sep 2026 15:22:59 +0530
+Subject: [PATCH 7/9] arm64: dts: qcom: Enable Lemans Draco connectivity
+
+Enable the M.2 E-key connectivity slot on Lemans Draco EVK by describing
+its always-on 3.3 V supply and PCIe and UART graph connections.
+
+Describe W_DISABLE2# so pwrseq-pcie-m2 can control Bluetooth power through
+UART17.
+
+Upstream-Status: Pending
+
+Signed-off-by: Wei Deng <wei.deng@oss.qualcomm.com>
+---
+ arch/arm64/boot/dts/qcom/lemans-draco-evk.dts | 64 +++++++++++++++++++
+ 1 file changed, 64 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/lemans-draco-evk.dts b/arch/arm64/boot/dts/qcom/lemans-draco-evk.dts
+index a9fcd0a88d84..9757c46033c3 100644
+--- a/arch/arm64/boot/dts/qcom/lemans-draco-evk.dts
++++ b/arch/arm64/boot/dts/qcom/lemans-draco-evk.dts
+@@ -12,6 +12,10 @@ / {
+ 		     "qcom,sa8775p";
+ 	chassis-type = "embedded";
+ 
++	aliases {
++		serial1 = &uart17;
++	};
++
+ 	vreg_0p9: regulator-0v9 {
+ 		compatible = "regulator-fixed";
+ 		regulator-name = "VREG_0P9";
+@@ -29,6 +33,48 @@ vreg_1p8: regulator-1v8 {
+ 		regulator-always-on;
+ 		regulator-boot-on;
+ 	};
++
++	vreg_keye_3p3: regulator-keye-3p3 {
++		compatible = "regulator-fixed";
++		regulator-name = "vreg_keye_3p3";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		regulator-always-on;
++	};
++
++	wifi-bt-connector {
++		compatible = "pcie-m2-e-connector";
++		vpcie3v3-supply = <&vreg_keye_3p3>;
++		w-disable2-gpios = <&pmm8654au_1_gpios 8 GPIO_ACTIVE_LOW>;
++
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			port@0 {
++				reg = <0>;
++				#address-cells = <1>;
++				#size-cells = <0>;
++
++				m2_e_pcie_ep: endpoint@0 {
++					reg = <0>;
++					remote-endpoint = <&tc9563_pcie1_ep>;
++				};
++			};
++
++			port@3 {
++				reg = <3>;
++				#address-cells = <1>;
++				#size-cells = <0>;
++
++				m2_e_uart_ep: endpoint@0 {
++					reg = <0>;
++					remote-endpoint = <&uart17_ep>;
++				};
++			};
++		};
++	};
++
+ };
+ 
+ &i2c2 {
+@@ -266,6 +312,10 @@ pcie@1,0 {
+ 			device_type = "pci";
+ 			ranges;
+ 			bus-range = <0x3 0xff>;
++
++			port {
++				tc9563_pcie1_ep: endpoint {};
++			};
+ 		};
+ 
+ 		pcie@2,0 {
+@@ -304,6 +354,10 @@ pcie@0,1 {
+ 	};
+ };
+ 
++&tc9563_pcie1_ep {
++	remote-endpoint = <&m2_e_pcie_ep>;
++};
++
+ &remoteproc_adsp {
+ 	firmware-name = "qcom/sa8775p/adsp.mbn";
+ 	iommus = <&apps_smmu 0x3000 0x0>;
+@@ -338,3 +392,13 @@ &remoteproc_gpdsp1 {
+ 
+ 	status = "okay";
+ };
++
++&uart17 {
++	status = "okay";
++
++	port {
++		uart17_ep: endpoint {
++			remote-endpoint = <&m2_e_uart_ep>;
++		};
++	};
++};
+-- 
+2.34.1
+
