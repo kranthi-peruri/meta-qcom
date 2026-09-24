@@ -1,45 +1,42 @@
-From 777e892d284ba5f955109caf87f39a61c85f1af9 Mon Sep 17 00:00:00 2001
+From 6ef8ac0c04da7a34744d43ca60d4862dd42eafee Mon Sep 17 00:00:00 2001
 From: Gopikishan Thawre <gthawre@qti.qualcomm.com>
 Date: Thu, 10 Sep 2026 14:44:43 +0530
-Subject: [PATCH 3/4] arm64: dts: qcom: Add LeMans Draco EVK SOM device tree
+Subject: [PATCH 03/11] arm64: dts: qcom: Add LeMans Draco EVK SOM device tree
 
-Add device tree for the LeMans Draco EVK System-on-Module (SOM)
-based on the SA8775P/QCS9100 SoC. The SOM includes:
-
-- Complete RPMH regulator configuration for three pmm8654au PMICs:
-  pmic-id a: smps4/5/9 and ldo4/5/6/7/8/9
-  pmic-id c: ldo1/2/3/4/5/6/7/8/9
-  pmic-id e: smps4/7/9 and ldo6/8
-- Firmware paths for QUP firmware and remote processors
-  (ADSP, CDSP0)
-- Debug UART (uart0)
-- XO board clock at 38.4 MHz, sleep clock at 32.768 kHz
+Add the SOM device tree for the SA8775P/QCS9100-based LeMans
+Draco EVK with RPMH regulators for three pmm8654au PMICs,
+QUP/remoteproc firmware paths, debug UART, and board clocks.
 
 Signed-off-by: Gopikishan Thawre <gthawre@qti.qualcomm.com>
+(cherry picked from commit 8db5519c7b6f64f608e6a2edeea2076395ae0a62)
 Upstream-Status: Pending
 ---
- .../boot/dts/qcom/lemans-draco-evk-som.dtsi   | 317 ++++++++++++++++++
- 1 file changed, 317 insertions(+)
+ .../boot/dts/qcom/lemans-draco-evk-som.dtsi   | 421 ++++++++++++++++++
+ 1 file changed, 421 insertions(+)
  create mode 100644 arch/arm64/boot/dts/qcom/lemans-draco-evk-som.dtsi
 
 diff --git a/arch/arm64/boot/dts/qcom/lemans-draco-evk-som.dtsi b/arch/arm64/boot/dts/qcom/lemans-draco-evk-som.dtsi
 new file mode 100644
-index 000000000000..c84a79ef0622
+index 000000000000..910d6f245280
 --- /dev/null
 +++ b/arch/arm64/boot/dts/qcom/lemans-draco-evk-som.dtsi
-@@ -0,0 +1,317 @@
+@@ -0,0 +1,421 @@
 +// SPDX-License-Identifier: BSD-3-Clause
 +/*
 + * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
 + */
-+/dts-v1/;
 +
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/pwm/pwm.h>
 +#include <dt-bindings/regulator/qcom,rpmh-regulator.h>
 +#include "lemans.dtsi"
 +#include "lemans-pmics.dtsi"
++
 +/ {
 +	aliases {
-+		serial0 = &uart0;
++		mmc1 = &sdhc;
++		serial0 = &uart10;
++		serial2 = &uart0;
 +	};
 +
 +	chosen {
@@ -286,6 +283,29 @@ index 000000000000..c84a79ef0622
 +	status = "okay";
 +};
 +
++&pmm8654au_0_pon_resin {
++	linux,code = <KEY_VOLUMEDOWN>;
++	status = "okay";
++};
++
++&pmm8654au_2_gpios {
++	usb0_intr_state: usb0-intr-state {
++		pins = "gpio5";
++		function = "normal";
++		input-enable;
++		bias-pull-up;
++		power-source = <0>;
++	};
++
++	usb2_id: usb2-id-state {
++		pins = "gpio11";
++		function = "normal";
++		input-enable;
++		bias-pull-up;
++		power-source = <0>;
++	};
++};
++
 +&qupv3_id_0 {
 +	firmware-name = "qcom/sa8775p/qupv3fw.elf";
 +
@@ -338,7 +358,84 @@ index 000000000000..c84a79ef0622
 +	clock-frequency = <32768>;
 +};
 +
++&tlmm {
++	qup_i2c11_default: qup-i2c11-state {
++		pins = "gpio48", "gpio49";
++		function = "qup1_se4";
++		drive-strength = <2>;
++		bias-pull-up;
++	};
++
++	sd_cd: sd-cd-state {
++		pins = "gpio36";
++		function = "gpio";
++		bias-pull-up;
++	};
++
++	usb_id: usb-id-state {
++		pins = "gpio50";
++		function = "gpio";
++		bias-pull-up;
++	};
++};
++
 +&uart0 {
++	status = "okay";
++};
++
++&uart10 {
++	compatible = "qcom,geni-debug-uart";
++	pinctrl-0 = <&qup_uart10_default>;
++	pinctrl-names = "default";
++
++	status = "okay";
++};
++
++&ufs_mem_hc {
++	reset-gpios = <&tlmm 149 GPIO_ACTIVE_LOW>;
++	vcc-supply = <&vreg_l8a>;
++	vcc-max-microamp = <1100000>;
++	vccq-supply = <&vreg_l4c>;
++	vccq-max-microamp = <1200000>;
++
++	status = "okay";
++};
++
++&ufs_mem_phy {
++	vdda-phy-supply = <&vreg_l4a>;
++	vdda-pll-supply = <&vreg_l1c>;
++
++	status = "okay";
++};
++
++&usb_0 {
++	status = "okay";
++};
++
++&usb_0_hsphy {
++	vdda-pll-supply = <&vreg_l7a>;
++	vdda18-supply = <&vreg_l6c>;
++	vdda33-supply = <&vreg_l9a>;
++
++	status = "okay";
++};
++
++&usb_0_qmpphy {
++	vdda-phy-supply = <&vreg_l1c>;
++	vdda-pll-supply = <&vreg_l7a>;
++
++	status = "okay";
++};
++
++&usb_2 {
++	status = "okay";
++};
++
++&usb_2_hsphy {
++	vdda-pll-supply = <&vreg_l7a>;
++	vdda18-supply = <&vreg_l6c>;
++	vdda33-supply = <&vreg_l9a>;
++
 +	status = "okay";
 +};
 +

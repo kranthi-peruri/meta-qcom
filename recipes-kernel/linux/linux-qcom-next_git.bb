@@ -30,9 +30,20 @@ SRC_URI = "git://github.com/qualcomm-linux/kernel.git;${SRCBRANCH};protocol=http
 SRC_URI += " \
     file://configs/bsp-additions.cfg \
     file://0001-dt-bindings-arm-qcom-Add-LeMans-Draco-EVK-compatible.patch \
-    file://0002-arm64-dts-qcom-Add-lemans-draco-evk.dtb-to-Makefile.patch \
+    file://0002-arm64-dts-qcom-Add-lemans-draco-evk-DTBs-to-Makefile.patch \
     file://0003-arm64-dts-qcom-Add-LeMans-Draco-EVK-SOM-device-tree.patch \
     file://0004-arm64-dts-qcom-lemans-draco-evk-add-device-tree-and-.patch \
+    file://0005-arm64-dts-qcom-lemans-draco-evk-Enable-PCIe.patch \
+    file://0006-FROMLIST-PCI-qcom-Honor-IOMMU-provider-s-iommu-cells.patch \
+    file://0007-arm64-dts-qcom-Enable-Lemans-Draco-connectivity.patch \
+    file://0008-PENDING-arm64-dts-qcom-lemans-draco-evk-Add-LT9611UX.patch \
+    file://0009-arm64-dts-qcom-lemans-draco-evk-Enable-Native-DP-sup.patch \
+    file://0010-arm64-dts-qcom-lemans-draco-evk-add-video-firmware-i.patch \
+    file://0011-arm64-dts-qcom-lemans-draco-evk-som-Enable-Adreno-66.patch \
+    file://0012-arm64-defconfig-Enable-Raspberry-Pi-7-inch-V2-touchs.patch \
+    file://0013-arm64-defconfig-Enable-Waveshare-8-inch-DSI-touchscr.patch \
+    file://0014-arm64-dts-qcom-lemans-draco-evk-Add-Raspberry-Pi-7-D.patch \
+    file://0015-arm64-defconfig-Enable-Raspberry-Pi-7-inch-V2-touchs.patch \ 
 "
 
 # To build tip of qcom-next branch set preferred

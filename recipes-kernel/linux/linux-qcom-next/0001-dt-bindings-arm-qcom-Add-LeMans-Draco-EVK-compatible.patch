@@ -1,17 +1,14 @@
-From ce00daf14163516d600de4cc61064160cad0b5d3 Mon Sep 17 00:00:00 2001
+From 7e7c2208bb10baa441dc1ecffd90b9187666b018 Mon Sep 17 00:00:00 2001
 From: Gopikishan Thawre <gthawre@qti.qualcomm.com>
 Date: Thu, 10 Sep 2026 14:44:31 +0530
-Subject: [PATCH 1/4] dt-bindings: arm: qcom: Add LeMans Draco EVK compatible
+Subject: [PATCH 01/11] dt-bindings: arm: qcom: Add LeMans Draco EVK compatible
  strings
 
-Add the compatible string for the Qualcomm LeMans Draco EVK board
-(SA8775P/QCS9100 SoC). The compatible chain is:
-  qcom,lemans-draco-evk
-  qcom,lemans-draco-evk-som
-  qcom,qcs9100
-  qcom,sa8775p
+Add compatible strings for the Qualcomm LeMans Draco EVK board
+based on the SA8775P/QCS9100 SoC.
 
 Signed-off-by: Gopikishan Thawre <gthawre@qti.qualcomm.com>
+(cherry picked from commit 9736e78227999bb9d48b64db12c24c1489aa7626)
 Upstream-Status: Pending
 ---
  Documentation/devicetree/bindings/arm/qcom.yaml | 7 +++++++

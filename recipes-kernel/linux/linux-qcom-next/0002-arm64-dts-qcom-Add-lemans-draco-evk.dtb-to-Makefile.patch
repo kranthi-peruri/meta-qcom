@@ -1,7 +1,7 @@
-From 91be22c9a87f982814420347cc607314e72766d5 Mon Sep 17 00:00:00 2001
+From 4095e338419ae547e58e99f868515b0de837c0b7 Mon Sep 17 00:00:00 2001
 From: Gopikishan Thawre <gthawre@qti.qualcomm.com>
 Date: Thu, 10 Sep 2026 14:44:36 +0530
-Subject: [PATCH 2/4] arm64: dts: qcom: Add lemans-draco-evk.dtb to Makefile
+Subject: [PATCH 2/9] arm64: dts: qcom: Add lemans-draco-evk.dtb to Makefile
 
 Add build entry for the LeMans Draco EVK board DTB.
 

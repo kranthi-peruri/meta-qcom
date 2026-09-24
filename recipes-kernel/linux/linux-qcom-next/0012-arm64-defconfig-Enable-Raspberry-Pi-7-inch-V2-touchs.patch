@@ -1,0 +1,42 @@
+From 2bb68c86151a63b9aae63c4a068de4a8bbd5c4c8 Mon Sep 17 00:00:00 2001
+From: Shashank Maurya <shashank.maurya@oss.qualcomm.com>
+Date: Mon, 28 Sep 2026 12:19:54 +0530
+Subject: [PATCH 1/4] arm64: defconfig: Enable Raspberry Pi 7-inch V2
+ touchscreen panel
+
+The Raspberry Pi 7-inch touchscreen panel V2 uses an Ilitek ILI9881C
+based DSI panel along with an I2C attached regulator that powers the
+display and controls the backlight PWM.
+
+Enable both drivers as modules so the panel works out of the box.
+
+Signed-off-by: Shashank Maurya <shashank.maurya@oss.qualcomm.com>
+
+Upstream-Status: Pending
+---
+ arch/arm64/configs/defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index 6ec8d3a69c98..1259b03a28d7 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -893,6 +893,7 @@ CONFIG_REGULATOR_QCOM_SMD_RPM=y
+ CONFIG_REGULATOR_QCOM_SPMI=y
+ CONFIG_REGULATOR_QCOM_USB_VBUS=m
+ CONFIG_REGULATOR_RAA215300=y
++CONFIG_REGULATOR_RASPBERRYPI_TOUCHSCREEN_V2=m
+ CONFIG_REGULATOR_RK808=y
+ CONFIG_REGULATOR_S2MPS11=y
+ CONFIG_REGULATOR_TPS65132=m
+@@ -1018,6 +1019,7 @@ CONFIG_DRM_PANEL_LVDS=m
+ CONFIG_DRM_PANEL_HIMAX_HX8279=m
+ CONFIG_DRM_PANEL_HIMAX_HX83112A=m
+ CONFIG_DRM_PANEL_HIMAX_HX83112B=m
++CONFIG_DRM_PANEL_ILITEK_ILI9881C=m
+ CONFIG_DRM_PANEL_ILITEK_ILI9882T=m
+ CONFIG_DRM_PANEL_KHADAS_TS050=m
+ CONFIG_DRM_PANEL_MANTIX_MLAF057WE51=m
+-- 
+2.34.1
+
