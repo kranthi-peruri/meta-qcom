@@ -1,7 +1,7 @@
-From ce00daf14163516d600de4cc61064160cad0b5d3 Mon Sep 17 00:00:00 2001
+From 7d2fa299ad946fe88e38e82ff1d55c886555f2bb Mon Sep 17 00:00:00 2001
 From: Gopikishan Thawre <gthawre@qti.qualcomm.com>
 Date: Thu, 10 Sep 2026 14:44:31 +0530
-Subject: [PATCH 1/4] dt-bindings: arm: qcom: Add LeMans Draco EVK compatible
+Subject: [PATCH 1/9] dt-bindings: arm: qcom: Add LeMans Draco EVK compatible
  strings
 
 Add the compatible string for the Qualcomm LeMans Draco EVK board

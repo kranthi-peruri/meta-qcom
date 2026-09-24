@@ -1,7 +1,7 @@
-From 777e892d284ba5f955109caf87f39a61c85f1af9 Mon Sep 17 00:00:00 2001
+From 6deca6051155f4eda8bdca49e2a63773e77210ac Mon Sep 17 00:00:00 2001
 From: Gopikishan Thawre <gthawre@qti.qualcomm.com>
 Date: Thu, 10 Sep 2026 14:44:43 +0530
-Subject: [PATCH 3/4] arm64: dts: qcom: Add LeMans Draco EVK SOM device tree
+Subject: [PATCH 3/9] arm64: dts: qcom: Add LeMans Draco EVK SOM device tree
 
 Add device tree for the LeMans Draco EVK System-on-Module (SOM)
 based on the SA8775P/QCS9100 SoC. The SOM includes:
