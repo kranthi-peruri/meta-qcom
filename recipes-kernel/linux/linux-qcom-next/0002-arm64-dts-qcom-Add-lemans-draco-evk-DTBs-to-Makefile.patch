@@ -1,0 +1,39 @@
+From 51249da1b1c1871e231b5999d35ba7b75ba5ab95 Mon Sep 17 00:00:00 2001
+From: Gopikishan Thawre <gthawre@qti.qualcomm.com>
+Date: Thu, 10 Sep 2026 14:44:36 +0530
+Subject: [PATCH 02/11] arm64: dts: qcom: Add lemans-draco-evk DTBs to Makefile
+
+Add build entries for lemans-draco-evk.dtb and
+lemans-draco-evk-el2.dtb.
+
+Signed-off-by: Gopikishan Thawre <gthawre@qti.qualcomm.com>
+Upstream-Status: Pending
+---
+ arch/arm64/boot/dts/qcom/Makefile | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/Makefile b/arch/arm64/boot/dts/qcom/Makefile
+index d8475fef902c..b5dd54fda7a3 100644
+--- a/arch/arm64/boot/dts/qcom/Makefile
++++ b/arch/arm64/boot/dts/qcom/Makefile
+@@ -51,6 +51,7 @@ dtb-$(CONFIG_ARCH_QCOM)	+= kaanapali-mtp.dtb
+ dtb-$(CONFIG_ARCH_QCOM)	+= kaanapali-qrd.dtb
+ dtb-$(CONFIG_ARCH_QCOM)	+= kalambo-crd.dtb
+ dtb-$(CONFIG_ARCH_QCOM)	+= lemans-evk.dtb
++dtb-$(CONFIG_ARCH_QCOM)	+= lemans-draco-evk.dtb
+ 
+ lemans-evk-emmc-dtbs := lemans-evk.dtb lemans-evk-emmc.dtbo
+ dtb-$(CONFIG_ARCH_QCOM) += lemans-evk-emmc.dtb
+@@ -69,6 +70,10 @@ dtb-$(CONFIG_ARCH_QCOM) += lemans-evk-sd-card.dtb
+ lemans-evk-el2-dtbs := lemans-evk.dtb lemans-el2.dtbo
+ 
+ dtb-$(CONFIG_ARCH_QCOM)	+= lemans-evk-el2.dtb
++lemans-draco-evk-el2-dtbs := lemans-draco-evk.dtb lemans-el2.dtbo
++
++dtb-$(CONFIG_ARCH_QCOM)	+= lemans-draco-evk-el2.dtb
++
+ lemans-evk-ifp-mezzanine-dtbs	:= lemans-evk.dtb lemans-evk-ifp-mezzanine.dtbo
+ dtb-$(CONFIG_ARCH_QCOM)	+= lemans-evk-ifp-mezzanine.dtb
+ dtb-$(CONFIG_ARCH_QCOM)	+= lemans-evk-ifp-mezzanine.dtbo
+-- 
+2.34.1
