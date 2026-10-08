@@ -29,6 +29,21 @@ SRC_URI = "git://github.com/qualcomm-linux/kernel.git;${SRCBRANCH};protocol=http
 # Additional kernel configs.
 SRC_URI += " \
     file://configs/bsp-additions.cfg \
+    file://0001-PENDING-dt-bindings-arm-qcom-Add-LeMans-Draco-EVK-co.patch \
+    file://0002-PENDING-arm64-dts-qcom-Add-LeMans-Draco-EVK-SOM-devi.patch \
+    file://0003-PENDING-arm64-dts-qcom-Add-LeMans-Draco-EVK-board.patch \
+    file://0004-arm64-dts-qcom-lemans-draco-evk-Enable-PCIe.patch \
+    file://0005-FROMLIST-PCI-qcom-Honor-IOMMU-provider-s-iommu-cells.patch \
+    file://0006-arm64-dts-qcom-Enable-Lemans-Draco-connectivity.patch \
+    file://0007-PENDING-arm64-dts-qcom-lemans-draco-evk-Add-LT9611UX.patch \
+    file://0008-arm64-dts-qcom-lemans-draco-evk-Enable-Native-DP-sup.patch \
+    file://0009-arm64-dts-qcom-lemans-draco-evk-add-video-firmware-i.patch \
+    file://0010-arm64-dts-qcom-lemans-draco-evk-som-Enable-Adreno-66.patch \
+    file://0011-arm64-dts-qcom-lemans-draco-evk-Add-Raspberry-Pi-7-D.patch \
+    file://0012-arm64-dts-qcom-lemans-draco-evk-Add-Waveshare-8-DSI-.patch \
+    file://0013-arm64-dts-qcom-Ethernet-changes-for-Lemans-Draco.patch \
+    file://0014-arm64-dts-qcom-lemans-draco-evk-add-dts-changes.patch \
+    file://0015-ASoC-qcom-sc8280xp-Add-driver-support-for-draco.patch \
 "
 
 # To build tip of qcom-next branch set preferred
