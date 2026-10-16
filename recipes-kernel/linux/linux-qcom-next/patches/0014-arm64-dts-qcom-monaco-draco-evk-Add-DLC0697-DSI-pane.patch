@@ -1,0 +1,112 @@
+From 26170d1856f86f083b0cb5a3fe38abe4df879a39 Mon Sep 17 00:00:00 2001
+From: Vishnu Saini <vishnu.saini@oss.qualcomm.com>
+Date: Fri, 16 Oct 2026 20:40:22 +0530
+Subject: [PATCH 14/20] arm64: dts: qcom: monaco-draco-evk: Add DLC0697 DSI
+ panel overlay
+
+Add an overlay for the DLC0697 DSI panel based on the ILI7807S
+controller, connected to DSI0 with a GPIO controlled backlight.
+The HDMI bridge and connector are disabled as they share DSI0.
+
+Signed-off-by: Vishnu Saini <vishnu.saini@oss.qualcomm.com>
+Upstream-Status: Pending
+---
+ arch/arm64/boot/dts/qcom/Makefile             |  3 +
+ .../qcom/monaco-draco-evk-dlc0697-dsi.dtso    | 79 +++++++++++++++++++
+ 2 files changed, 82 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/qcom/monaco-draco-evk-dlc0697-dsi.dtso
+
+--- kernel-source.orig/arch/arm64/boot/dts/qcom/Makefile
++++ kernel-source/arch/arm64/boot/dts/qcom/Makefile
+@@ -80,6 +80,9 @@
+ dtb-$(CONFIG_ARCH_QCOM)	+= monaco-ac-evk.dtb
+ dtb-$(CONFIG_ARCH_QCOM)	+= monaco-draco-evk.dtb
+ 
++monaco-draco-evk-dlc0697-dsi-dtbs := monaco-draco-evk.dtb monaco-draco-evk-dlc0697-dsi.dtbo
++dtb-$(CONFIG_ARCH_QCOM)	+= monaco-draco-evk-dlc0697-dsi.dtb
++
+ monaco-draco-evk-el2-dtbs := monaco-draco-evk.dtb monaco-el2.dtbo
+ dtb-$(CONFIG_ARCH_QCOM)	+= monaco-draco-evk-el2.dtb
+ 
+--- /dev/null
++++ kernel-source/arch/arm64/boot/dts/qcom/monaco-draco-evk-dlc0697-dsi.dtso
+@@ -0,0 +1,79 @@
++// SPDX-License-Identifier: BSD-3-Clause
++/*
++ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++
++&{/} {
++	dlc_backlight: backlight {
++		compatible = "gpio-backlight";
++		gpios = <&expander2 2 GPIO_ACTIVE_HIGH>;
++		default-on;
++	};
++};
++
++&hdmi_bridge {
++	status = "disabled";
++};
++
++&hdmi_connector {
++	status = "disabled";
++};
++
++&mdss_dsi0 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++
++	panel@0 {
++		compatible = "dlc,dlc0697", "ilitek,ili7807s";
++		reg = <0>;
++
++		avdd-supply = <&vreg_bridge_3p3>;
++		avee-supply = <&vreg_bridge_3p3>;
++		backlight = <&dlc_backlight>;
++		reset-gpios = <&tlmm 66 GPIO_ACTIVE_LOW>;
++		vddi-supply = <&vreg_s4a>;
++
++		pinctrl-0 = <&panel_rst_n &panel_te_pin>;
++		pinctrl-1 = <&panel_rst_n_suspend>;
++		pinctrl-names = "default", "sleep";
++
++		port {
++			dlc_panel_in: endpoint {
++				remote-endpoint = <&mdss_dsi0_out>;
++			};
++		};
++	};
++};
++
++&mdss_dsi0_out {
++	data-lanes = <0 1 2 3>;
++	remote-endpoint = <&dlc_panel_in>;
++};
++
++&tlmm {
++	panel_te_pin: panel-te-pin-state {
++		pins = "gpio52";
++		function = "mdp_vsync";
++		drive-strength = <2>;
++		bias-pull-down;
++	};
++
++	panel_rst_n: panel-rst-n-state {
++		pins = "gpio66";
++		function = "gpio";
++		drive-strength = <8>;
++		bias-disable;
++	};
++
++	panel_rst_n_suspend: panel-rst-n-suspend-state {
++		pins = "gpio66";
++		function = "gpio";
++		drive-strength = <2>;
++		bias-pull-down;
++	};
++};

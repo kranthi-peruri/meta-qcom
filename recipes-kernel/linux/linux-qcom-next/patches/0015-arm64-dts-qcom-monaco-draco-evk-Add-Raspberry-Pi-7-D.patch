@@ -1,0 +1,135 @@
+From 20afb814c2a4cfd4342a049cb31e542fbe7bbe62 Mon Sep 17 00:00:00 2001
+From: Vishnu Saini <vishnu.saini@oss.qualcomm.com>
+Date: Fri, 16 Oct 2026 23:07:14 +0530
+Subject: [PATCH 15/20] arm64: dts: qcom: monaco-draco-evk: Add Raspberry Pi 7"
+ DSI panel overlay
+
+Add a devicetree overlay for the Raspberry Pi 7" DSI panel on the
+Monaco Draco EVK. The overlay disables the HDMI bridge and connector,
+describes the panel behind the Raspberry Pi touchscreen regulator, which
+provides the reset GPIO and PWM backlight, and routes DSI0 to the panel
+over two lanes.
+
+Also add the Goodix GT911 touch controller on the DSI0 I2C mux channel,
+and a fixed regulator for its supply, gated by the panel MCU GPIO.
+
+Upstream-Status: Pending
+Signed-off-by: Vishnu Saini <vishnu.saini@oss.qualcomm.com>
+---
+ arch/arm64/boot/dts/qcom/Makefile             |  3 +
+ ...onaco-draco-evk-raspberrypi-dsi-7inch.dtso | 89 +++++++++++++++++++
+ 2 files changed, 92 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/qcom/monaco-draco-evk-raspberrypi-dsi-7inch.dtso
+
+diff --git a/arch/arm64/boot/dts/qcom/Makefile b/arch/arm64/boot/dts/qcom/Makefile
+index c69bb5ff4a47..d390aae1b7a4 100644
+--- a/arch/arm64/boot/dts/qcom/Makefile
++++ b/arch/arm64/boot/dts/qcom/Makefile
+@@ -66,6 +66,9 @@ dtb-$(CONFIG_ARCH_QCOM)	+= monaco-draco-evk.dtb
+ monaco-draco-evk-dlc0697-dsi-dtbs := monaco-draco-evk.dtb monaco-draco-evk-dlc0697-dsi.dtbo
+ dtb-$(CONFIG_ARCH_QCOM)	+= monaco-draco-evk-dlc0697-dsi.dtb
+ 
++monaco-draco-evk-raspberrypi-dsi-7inch-dtbs := monaco-draco-evk.dtb monaco-draco-evk-raspberrypi-dsi-7inch.dtbo
++dtb-$(CONFIG_ARCH_QCOM)	+= monaco-draco-evk-raspberrypi-dsi-7inch.dtb
++
+ monaco-draco-evk-el2-dtbs := monaco-draco-evk.dtb monaco-el2.dtbo
+ dtb-$(CONFIG_ARCH_QCOM)	+= monaco-draco-evk-el2.dtb
+ 
+diff --git a/arch/arm64/boot/dts/qcom/monaco-draco-evk-raspberrypi-dsi-7inch.dtso b/arch/arm64/boot/dts/qcom/monaco-draco-evk-raspberrypi-dsi-7inch.dtso
+new file mode 100644
+index 000000000000..d0145a5bd09d
+--- /dev/null
++++ b/arch/arm64/boot/dts/qcom/monaco-draco-evk-raspberrypi-dsi-7inch.dtso
+@@ -0,0 +1,89 @@
++// SPDX-License-Identifier: BSD-3-Clause
++/*
++ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++
++&{/} {
++	display_bl: backlight {
++		compatible = "pwm-backlight";
++		power-supply = <&reg_dsi_panel>;
++		pwms = <&reg_backlight 0 255 0>;
++	};
++
++	reg_dsi_panel: regulator-dsi-panel {
++		compatible = "regulator-fixed";
++		regulator-name = "rpi-dsi-panel";
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++	};
++
++	reg_dsi_touch: regulator-dsi-touch {
++		compatible = "regulator-fixed";
++		regulator-name = "rpi-touch";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&reg_backlight 1 GPIO_ACTIVE_HIGH>;
++		startup-delay-us = <50000>;
++		enable-active-high;
++	};
++};
++
++&hdmi_bridge {
++	status = "disabled";
++};
++
++&hdmi_connector {
++	status = "disabled";
++};
++
++&i2c_mux {
++	i2c@0 {
++		reg_backlight: regulator@45 {
++			compatible = "raspberrypi,touchscreen-panel-regulator-v2";
++			reg = <0x45>;
++			#gpio-cells = <2>;
++			gpio-controller;
++			#pwm-cells = <3>;
++		};
++
++		touchscreen@5d {
++			compatible = "goodix,gt911";
++			reg = <0x5d>;
++			AVDD28-supply = <&reg_dsi_touch>;
++			touchscreen-size-x = <720>;
++			touchscreen-size-y = <1280>;
++		};
++	};
++};
++
++&mdss_dsi0 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++
++	status = "okay";
++
++	panel@0 {
++		compatible = "raspberrypi,dsi-7inch", "ilitek,ili9881c";
++		reg = <0>;
++
++		backlight = <&display_bl>;
++		power-supply = <&reg_dsi_panel>;
++		reset-gpios = <&reg_backlight 0 GPIO_ACTIVE_LOW>;
++
++		port {
++			panel0_in: endpoint {
++				remote-endpoint = <&mdss_dsi0_out>;
++			};
++		};
++	};
++};
++
++&mdss_dsi0_out {
++	data-lanes = <0 1>;
++	remote-endpoint = <&panel0_in>;
++};
+-- 
+2.34.1
+

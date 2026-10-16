@@ -1,0 +1,201 @@
+From c223d76a53a27dca7fb2a6064a73b20f2e334975 Mon Sep 17 00:00:00 2001
+From: Vishnu Saini <vishnu.saini@oss.qualcomm.com>
+Date: Fri, 16 Oct 2026 22:57:53 +0530
+Subject: [PATCH 17/20] arm64: dts: qcom: monaco-draco-evk: Add LVDS AUO
+ G133HAN01 panel overlay
+
+Add a devicetree overlay for the AUO G133HAN01 dual-channel LVDS panel
+on the Monaco Draco EVK. DSI0 is routed through the TI SN65DSI84 bridge
+on the I2C mux, and the backlight is driven by the PCA9685 PWM on I2C13.
+The overlay disables the HDMI bridge and connector.
+
+Also set the drive strength to 6 mA and enable the pull-up on the QUP
+I2C13 data and clock pins in the SoM for reliable operation with the
+PCA9685 on the bus.
+
+Upstream-Status: Pending
+Signed-off-by: Vishnu Saini <vishnu.saini@oss.qualcomm.com>
+---
+ arch/arm64/boot/dts/qcom/Makefile             |   3 +
+ .../dts/qcom/monaco-draco-ac-evk-som.dtsi     |   5 +
+ .../monaco-draco-evk-lvds-auo,g133han01.dtso  | 138 ++++++++++++++++++
+ 3 files changed, 146 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/qcom/monaco-draco-evk-lvds-auo,g133han01.dtso
+
+diff --git a/arch/arm64/boot/dts/qcom/Makefile b/arch/arm64/boot/dts/qcom/Makefile
+index 12bbf5b02fbc..841ffba2ab14 100644
+--- a/arch/arm64/boot/dts/qcom/Makefile
++++ b/arch/arm64/boot/dts/qcom/Makefile
+@@ -72,6 +72,9 @@ dtb-$(CONFIG_ARCH_QCOM)	+= monaco-draco-evk-raspberrypi-dsi-7inch.dtb
+ monaco-draco-evk-waveshare-dsi-8inch-dtbs := monaco-draco-evk.dtb monaco-draco-evk-waveshare-dsi-8inch.dtbo
+ dtb-$(CONFIG_ARCH_QCOM)	+= monaco-draco-evk-waveshare-dsi-8inch.dtb
+ 
++monaco-draco-evk-lvds-auo,g133han01-dtbs := monaco-draco-evk.dtb monaco-draco-evk-lvds-auo,g133han01.dtbo
++dtb-$(CONFIG_ARCH_QCOM)	+= monaco-draco-evk-lvds-auo,g133han01.dtb
++
+ monaco-draco-evk-el2-dtbs := monaco-draco-evk.dtb monaco-el2.dtbo
+ dtb-$(CONFIG_ARCH_QCOM)	+= monaco-draco-evk-el2.dtb
+ 
+diff --git a/arch/arm64/boot/dts/qcom/monaco-draco-ac-evk-som.dtsi b/arch/arm64/boot/dts/qcom/monaco-draco-ac-evk-som.dtsi
+index 90a5a7a4a6f2..c24dc068ffd6 100644
+--- a/arch/arm64/boot/dts/qcom/monaco-draco-ac-evk-som.dtsi
++++ b/arch/arm64/boot/dts/qcom/monaco-draco-ac-evk-som.dtsi
+@@ -179,6 +179,11 @@ vreg_s5c: smps5 {
+ 	};
+ };
+ 
++&qup_i2c13_data_clk {
++	drive-strength = <6>;
++	bias-pull-up;
++};
++
+ &qupv3_id_0 {
+ 	firmware-name = "qcom/qcs8300/qupv3fw.elf";
+ 	status = "okay";
+diff --git a/arch/arm64/boot/dts/qcom/monaco-draco-evk-lvds-auo,g133han01.dtso b/arch/arm64/boot/dts/qcom/monaco-draco-evk-lvds-auo,g133han01.dtso
+new file mode 100644
+index 000000000000..d5872dc63310
+--- /dev/null
++++ b/arch/arm64/boot/dts/qcom/monaco-draco-evk-lvds-auo,g133han01.dtso
+@@ -0,0 +1,138 @@
++// SPDX-License-Identifier: BSD-3-Clause
++/*
++ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
++ */
++
++/dts-v1/;
++/plugin/;
++
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/interrupt-controller/irq.h>
++
++&{/} {
++	vreg_disp0_bl_en: regulator-disp0-bl-en {
++		compatible = "regulator-fixed";
++		regulator-name = "vreg_disp0_bl_en";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&expander2 2 GPIO_ACTIVE_HIGH>;
++		enable-active-high;
++	};
++
++	vreg_lvds_3p3: regulator-lvds-3p3 {
++		compatible = "regulator-fixed";
++		regulator-name = "vreg_lvds_3p3";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++	};
++
++	backlight_lvds: backlight {
++		compatible = "pwm-backlight";
++		pwms = <&pca9685 2 1000000>;
++		power-supply = <&vreg_disp0_bl_en>;
++	};
++
++	panel-lvds {
++		compatible = "auo,g133han01";
++		power-supply = <&vreg_lvds_3p3>;
++		backlight = <&backlight_lvds>;
++
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			/* LVDS Channel A - odd pixels */
++			port@0 {
++				reg = <0>;
++				dual-lvds-odd-pixels;
++
++				lvds_panel_out_a: endpoint {
++					remote-endpoint = <&sn65dsi84_out_a>;
++				};
++			};
++
++			/* LVDS Channel B - even pixels */
++			port@1 {
++				reg = <1>;
++				dual-lvds-even-pixels;
++
++				lvds_panel_out_b: endpoint {
++					remote-endpoint = <&sn65dsi84_out_b>;
++				};
++			};
++		};
++	};
++};
++
++&hdmi_bridge {
++	status = "disabled";
++};
++
++&hdmi_connector {
++	status = "disabled";
++};
++
++&i2c13 {
++	clock-frequency = <100000>;
++
++	status = "okay";
++
++	pca9685: pwm@42 {
++		compatible = "nxp,pca9685-pwm";
++		reg = <0x42>;
++		#pwm-cells = <2>;
++	};
++};
++
++&i2c_mux {
++	i2c@1 {
++		reg = <1>;
++
++		sn65dsi84: bridge@2c {
++			compatible = "ti,sn65dsi84";
++			reg = <0x2c>;
++
++			enable-gpios = <&tlmm 3 GPIO_ACTIVE_HIGH>;
++			interrupts-extended = <&tlmm 76 IRQ_TYPE_EDGE_FALLING>;
++			vcc-supply = <&vreg_bridge_3p3>;
++			pinctrl-0 = <&bridge_rst_pin &bridge_irq_pin>;
++			pinctrl-names = "default";
++
++			ports {
++				#address-cells = <1>;
++				#size-cells = <0>;
++
++				port@0 {
++					reg = <0>;
++
++					sn65dsi84_in: endpoint {
++						data-lanes = <1 2 3 4>;
++						remote-endpoint = <&mdss_dsi0_out>;
++					};
++				};
++
++				port@2 {
++					reg = <2>;
++
++					sn65dsi84_out_a: endpoint {
++						data-lanes = <1 2 3 4>;
++						remote-endpoint = <&lvds_panel_out_a>;
++					};
++				};
++
++				port@3 {
++					reg = <3>;
++
++					sn65dsi84_out_b: endpoint {
++						data-lanes = <1 2 3 4>;
++						remote-endpoint = <&lvds_panel_out_b>;
++					};
++				};
++			};
++		};
++	};
++};
++
++&mdss_dsi0_out {
++	remote-endpoint = <&sn65dsi84_in>;
++};
+-- 
+2.34.1
+

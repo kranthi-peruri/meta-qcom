@@ -1,0 +1,40 @@
+From 5a4d88c70eb1b23be03afa74597f928f96393381 Mon Sep 17 00:00:00 2001
+From: Vishnu Saini <vishnu.saini@oss.qualcomm.com>
+Date: Fri, 16 Oct 2026 21:15:14 +0530
+Subject: [PATCH 18/20] FROMLIST: arm64: defconfig: Enable RPi touchscreen V2
+ regulator and ILI9881C panel
+
+Enable the regulator driver for the Raspberry Pi touchscreen V2 power
+and backlight controller, and the Ilitek ILI9881C DSI panel driver, as
+modules, for the Raspberry Pi 7 inch DSI panel on the 22-pin JDISP1 DSI0
+connector on Qualcomm Shikra EVK, Talos Lyra EVK boards.
+
+Signed-off-by: Vishnu Saini <vishnu.saini@oss.qualcomm.com>
+Link: https://lore.kernel.org/all/20261021-shikra_display_overlays-v1-4-adaea735999f@oss.qualcomm.com/
+Upstream-Status: Submitted [https://lore.kernel.org/all/20261021-shikra_display_overlays-v1-4-adaea735999f@oss.qualcomm.com/]
+---
+ arch/arm64/configs/defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index 6ec8d3a69c98..1259b03a28d7 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -893,6 +893,7 @@ CONFIG_REGULATOR_QCOM_SMD_RPM=y
+ CONFIG_REGULATOR_QCOM_SPMI=y
+ CONFIG_REGULATOR_QCOM_USB_VBUS=m
+ CONFIG_REGULATOR_RAA215300=y
++CONFIG_REGULATOR_RASPBERRYPI_TOUCHSCREEN_V2=m
+ CONFIG_REGULATOR_RK808=y
+ CONFIG_REGULATOR_S2MPS11=y
+ CONFIG_REGULATOR_TPS65132=m
+@@ -1018,6 +1019,7 @@ CONFIG_DRM_PANEL_LVDS=m
+ CONFIG_DRM_PANEL_HIMAX_HX8279=m
+ CONFIG_DRM_PANEL_HIMAX_HX83112A=m
+ CONFIG_DRM_PANEL_HIMAX_HX83112B=m
++CONFIG_DRM_PANEL_ILITEK_ILI9881C=m
+ CONFIG_DRM_PANEL_ILITEK_ILI9882T=m
+ CONFIG_DRM_PANEL_KHADAS_TS050=m
+ CONFIG_DRM_PANEL_MANTIX_MLAF057WE51=m
+-- 
+2.34.1

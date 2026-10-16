@@ -1,7 +1,8 @@
-From 2ba6011e5f10dbcff26e090369d0b7fc40986221 Mon Sep 17 00:00:00 2001
+From 740babb5dec698f713c6a915a50075b0875ca4f3 Mon Sep 17 00:00:00 2001
 From: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
 Date: Thu, 8 Oct 2026 18:23:50 +0530
-Subject: [PATCH 2/3] arm64: dts: qcom: add monaco draco ac evk som device tree
+Subject: [PATCH 02/20] arm64: dts: qcom: add monaco draco ac evk som device
+ tree
 
 Add the SOM device tree for the QCS8300-based Monaco Draco AC EVK with
 RPMH regulators for the pmm8654au PMICs, QUP and remoteproc firmware
@@ -16,7 +17,7 @@ Upstream-Status: Pending
 
 diff --git a/arch/arm64/boot/dts/qcom/monaco-draco-ac-evk-som.dtsi b/arch/arm64/boot/dts/qcom/monaco-draco-ac-evk-som.dtsi
 new file mode 100644
-index 000000000000..ac2a3cbfebec
+index 000000000000..90a5a7a4a6f2
 --- /dev/null
 +++ b/arch/arm64/boot/dts/qcom/monaco-draco-ac-evk-som.dtsi
 @@ -0,0 +1,276 @@

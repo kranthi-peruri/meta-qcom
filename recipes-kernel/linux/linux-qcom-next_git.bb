@@ -39,8 +39,30 @@ SRC_URI += " \
 # Monaco Draco EVK board support (pending upstream).
 SRC_URI += " \
     file://patches/0001-dt-bindings-arm-qcom-add-monaco-draco-evk-compatible.patch \
-    file://patches/0002-arm64-dts-qcom-add-monaco-draco-ac-evk-som-device-tree.patch \
+    file://patches/0002-arm64-dts-qcom-add-monaco-draco-ac-evk-som-device-tr.patch \
     file://patches/0003-arm64-dts-qcom-add-monaco-draco-evk-board.patch \
+    file://patches/0004-arm64-dts-qcom-monaco-draco-evk-Enable-PCIe-Support.patch \
+    file://patches/0005-FROMLIST-PCI-qcom-Honor-IOMMU-provider-s-iommu-cells.patch \
+    file://patches/0006-arm64-dts-qcom-Enable-Monaco-Draco-connectivity.patch \
+    file://patches/0007-FROMLIST-net-qrtr-Allow-the-host-QRTR-to-assign-a-un.patch \
+    file://patches/0008-FROMLIST-net-qrtr-Assign-unique-node-id-for-MHI-endp.patch \
+    file://patches/0009-FROMLIST-wifi-ath11k-Connect-to-the-QMI-server-belon.patch \
+    file://patches/0010-FROMLIST-wifi-ath12k-Connect-to-the-QMI-server-belon.patch \
+    file://patches/0011-arm64-dts-qcom-monaco-draco-evk-Enable-native-Displa.patch \
+    file://patches/0012-arm64-dts-qcom-monaco-draco-evk-Add-I2C-aliases.patch \
+    file://patches/0013-arm64-dts-qcom-monaco-draco-evk-Enable-DSI-to-HDMI-o.patch \
+    file://patches/0014-arm64-dts-qcom-monaco-draco-evk-Add-DLC0697-DSI-pane.patch \
+    file://patches/0015-arm64-dts-qcom-monaco-draco-evk-Add-Raspberry-Pi-7-D.patch \
+    file://patches/0016-arm64-dts-qcom-monaco-draco-evk-Add-Waveshare-8-DSI-.patch \
+    file://patches/0017-arm64-dts-qcom-monaco-draco-evk-Add-LVDS-AUO-G133HAN.patch \
+    file://patches/0018-FROMLIST-arm64-defconfig-Enable-RPi-touchscreen-V2-r.patch \
+    file://patches/0019-FROMLIST-arm64-defconfig-Enable-Waveshare-DSI-panel-.patch \
+    file://patches/0020-QCLINUX-arm64-dts-qcom-monaco-Add-camera-sensor-node.patch \
+    file://patches/0021-QCLINUX-prune.config-Enable-the-Goodix-touchscreen-d.patch \
+    file://patches/0022-arm64-dts-qcom-monaco-evk-Enable-TPM-ST33.patch \
+    file://patches/0023-arm64-dts-qcom-monaco-draco-ac-evk-som-Enable-Adreno.patch \
+    file://patches/0024-arm64-dts-qcom-monaco-draco-evk-add-sound-support-fo.patch \
+    file://patches/0025-ASoC-qcom-sc8280xp-Add-routes-and-controls-for-audio.patch \
 "
 
 # To build tip of qcom-next branch set preferred
