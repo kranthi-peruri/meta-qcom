@@ -41,6 +41,8 @@ SRC_URI += " \
     file://patches/0001-dt-bindings-arm-qcom-add-monaco-draco-evk-compatible.patch \
     file://patches/0002-arm64-dts-qcom-add-monaco-draco-ac-evk-som-device-tree.patch \
     file://patches/0003-arm64-dts-qcom-add-monaco-draco-evk-board.patch \
+    file://patches/0004-arm64-dts-qcom-monaco-draco-evk-Enable-PCIe-Support.patch \
+    file://patches/0005-FROMLIST-PCI-qcom-Honor-IOMMU-provider-s-iommu-cells.patch \
 "
 
 # To build tip of qcom-next branch set preferred
