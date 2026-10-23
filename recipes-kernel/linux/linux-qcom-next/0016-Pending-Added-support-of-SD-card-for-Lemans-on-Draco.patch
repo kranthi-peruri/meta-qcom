@@ -1,0 +1,96 @@
+From c514f3290a2364c4cd27f060b5069a5caf6f4145 Mon Sep 17 00:00:00 2001
+From: Kranthi Peruri <kperuri@qti.qualcomm.com>
+Date: Wed, 14 Oct 2026 16:14:36 +0530
+Subject: [PATCH 1/4] Pending: Added support of SD card for Lemans on Draco EVK
+
+Upstream-Status: Pending
+Signed-off-by: Kranthi Peruri <kperuri@qti.qualcomm.com>
+---
+ arch/arm64/boot/dts/qcom/lemans-draco-evk.dts | 51 +++++++++++++++++++
+ 1 file changed, 51 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/lemans-draco-evk.dts b/arch/arm64/boot/dts/qcom/lemans-draco-evk.dts
+index d2e82130f9e9..49b5646e5eb3 100644
+--- a/arch/arm64/boot/dts/qcom/lemans-draco-evk.dts
++++ b/arch/arm64/boot/dts/qcom/lemans-draco-evk.dts
+@@ -15,6 +15,7 @@ / {
+	aliases {
+		ethernet0 = &ethernet0;
+		ethernet1 = &ethernet1;
++		mmc1 = &sdhc;
+		serial1 = &uart17;
+	};
+ 
+@@ -85,6 +86,28 @@ hdmi_con: endpoint {
+ 		};
+ 	};
+ 
++        vmmc_sdc: regulator-vmmc-sdc {
++                compatible = "regulator-fixed";
++                regulator-name = "vmmc_sdc";
++
++                regulator-min-microvolt = <2950000>;
++                regulator-max-microvolt = <2950000>;
++        };
++
++        vreg_sdc: regulator-vreg-sdc {
++		compatible = "regulator-gpio";
++
++		regulator-name = "vreg_sdc";
++		regulator-type = "voltage";
++		regulator-min-microvolt = <1800000>;
++		regulator-max-microvolt = <2950000>;
++
++		gpios = <&tlmm 12 GPIO_ACTIVE_HIGH>;
++		states = <1800000 1>, <2950000 0>;
++
++		startup-delay-us = <100>;
++	};
++
+ 	vreg_0p9: regulator-0v9 {
+ 		compatible = "regulator-fixed";
+ 		regulator-name = "VREG_0P9";
+@@ -819,6 +842,18 @@ wake-pins {
+ 		};
+ 	};
+ 
++        sd_cd: sd-cd-state {
++		pins = "gpio59";
++		function = "gpio";
++		bias-pull-up;
++	};
++
++	sd_mode: sd-mode {
++		pins = "gpio12";
++		function = "gpio";
++		bias-pull-up;
++	};
++
+ 	tc9563_resx_n: tc9563-resx-state {
+ 		pins = "gpio10";
+ 		function = "gpio";
+@@ -1108,6 +1143,22 @@ &serdes1 {
+  * };
+  */
+ 
++&sdhc {
++	vmmc-supply = <&vmmc_sdc>;
++	vqmmc-supply = <&vreg_sdc>;
++
++	pinctrl-0 = <&sdc_default>, <&sd_cd>;
++	pinctrl-1 = <&sdc_sleep>, <&sd_cd>;
++	pinctrl-names = "default", "sleep";
++
++	bus-width = <4>;
++	cd-gpios = <&tlmm 59 GPIO_ACTIVE_LOW>;
++	no-mmc;
++	no-sdio;
++
++	status = "okay";
++};
++
+ &uart17 {
+ 	status = "okay";
+ 
+-- 
+2.34.1

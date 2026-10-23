@@ -1,0 +1,85 @@
+From 459e29c28558cdae334d6e5f12bc359615513387 Mon Sep 17 00:00:00 2001
+From: prudhvikandi-png <prudhvi.kandi@oss.qualcomm.com>
+Date: Mon, 5 Oct 2026 16:22:10 +0530
+Subject: [PATCH 15/15] ASoC: qcom: sc8280xp: Add driver support for draco
+
+Signed-off-by: prudhvikandi-png <prudhvi.kandi@oss.qualcomm.com>
+Upstream-Status: Pending
+---
+ sound/soc/qcom/Kconfig    |  1 +
+ sound/soc/qcom/sc8280xp.c | 34 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 35 insertions(+)
+
+diff --git a/sound/soc/qcom/Kconfig b/sound/soc/qcom/Kconfig
+index 71cd253d3256..47bd4e1f3061 100644
+--- a/sound/soc/qcom/Kconfig
++++ b/sound/soc/qcom/Kconfig
+@@ -211,6 +211,7 @@ config SND_SOC_SC8280XP
+ 	depends on QCOM_APR && SOUNDWIRE
+ 	depends on COMMON_CLK
+ 	select SND_SOC_QDSP6
++	select SND_SOC_MAX98090
+ 	select SND_SOC_QCOM_COMMON
+ 	select SND_SOC_QCOM_SDW
+ 	help
+diff --git a/sound/soc/qcom/sc8280xp.c b/sound/soc/qcom/sc8280xp.c
+index c38ea30e5658..e10da5c21657 100644
+--- a/sound/soc/qcom/sc8280xp.c
++++ b/sound/soc/qcom/sc8280xp.c
+@@ -76,6 +76,27 @@ static const struct snd_soc_dapm_route talos_lyra_dapm_routes[] = {
+         {"Speaker", NULL, "SPKR"},
+ };
+ 
++static const struct snd_soc_dapm_route draco_dapm_routes[] = {
++	{"IN12", NULL, "Headset Mic12"},
++	{"Headset Mic12", NULL, "MICBIAS"},
++	{"IN34", NULL, "Headset Mic34"},
++	{"Headset Mic34", NULL, "MICBIAS"},
++	{"IN56", NULL, "Headset Mic56"},
++	{"Headset Mic56", NULL, "MICBIAS"},
++	{"Headphone", NULL, "HPL"},
++	{"Headphone", NULL, "HPR"},
++	{"Receiver", NULL, "RCVL"},
++	{"Receiver", NULL, "RCVR"},
++	{"Speaker", NULL, "SPKL"},
++	{"Speaker", NULL, "SPKR"},
++	{"VA DMIC0", NULL, "vdd-micb"},
++	{"VA DMIC1", NULL, "vdd-micb"},
++	{"VA DMIC2", NULL, "vdd-micb"},
++	{"VA DMIC3", NULL, "vdd-micb"},
++	{"VA DMIC4", NULL, "vdd-micb"},
++	{"VA DMIC5", NULL, "vdd-micb"},
++};
++
+ static const struct snd_soc_dapm_widget shikra_cqm_dapm_widgets[] = {
+ 	SND_SOC_DAPM_HP("Headphone Jack", NULL),
+ 	SND_SOC_DAPM_MIC("Mic Jack", NULL),
+@@ -575,6 +596,18 @@ static const struct qcom_snd_soc_common qcs9100_priv_data = {
+ 	.num_dapm_widgets = ARRAY_SIZE(sc8280xp_dapm_widgets),
+ };
+ 
++static const struct qcom_snd_soc_common draco_priv_data = {
++	.driver_name = "sa8775p",
++	.dapm_widgets = max98090_dapm_widgets,
++	.num_dapm_widgets = ARRAY_SIZE(max98090_dapm_widgets),
++	.dapm_routes = draco_dapm_routes,
++	.num_dapm_routes = ARRAY_SIZE(draco_dapm_routes),
++	.controls = max98090_controls,
++	.num_controls = ARRAY_SIZE(max98090_controls),
++	.codec_dai_fmt = SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_BC_FC,
++	.codec_sysclk_set = true,
++};
++
+ static const struct qcom_snd_soc_common qcs615_priv_data = {
+ 	.driver_name = "qcs615",
+ 	.dapm_widgets = sc8280xp_dapm_widgets,
+@@ -721,6 +754,7 @@ static const struct of_device_id snd_sc8280xp_dt_match[] = {
+ 	{ .compatible = "qcom,qcs8275-sndcard", .data = &qcs8275_priv_data },
+ 	{ .compatible = "qcom,qcs9075-sndcard", .data = &qcs9100_priv_data },
+ 	{ .compatible = "qcom,qcs9100-sndcard", .data = &qcs9100_priv_data },
++	{ .compatible = "qcom,qcs9100-draco-sndcard", .data = &draco_priv_data },
+ 	{ .compatible = "qcom,sc8280xp-sndcard", .data = &sc8280xp_priv_data },
+ 	{ .compatible = "qcom,shikra-cqm-sndcard", .data = &shikra_cqm_priv_data },
+ 	{ .compatible = "qcom,shikra-cqs-sndcard", .data = &shikra_cqs_priv_data },
+-- 
+2.34.1
