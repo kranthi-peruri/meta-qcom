@@ -1,0 +1,132 @@
+From 5c77ad1e64eaecbad8add0133548bd7c4121aac7 Mon Sep 17 00:00:00 2001
+From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+Date: Thu, 22 Oct 2026 19:43:08 +0200
+Subject: [PATCH 08/20] FROMLIST: net: qrtr: Assign unique node id for MHI
+ endpoints
+
+Now that the QRTR driver allows using the unique node id for each device,
+which is different from the node id received from the remote node, compute
+a unique node id using a new API, qrtr_host_node_id().
+
+This API takes the 'index' parameter and adds it to QRTR_NODE_HOST_BASE.
+The base is chosen well above the node ids in use by the remote nodes, so
+that the host assigned ids never collide with the pre-existing ones.
+
+Since the ids at and above the base now belong to the host, reject any
+packet carrying one as the source node id or as the node id of an
+announced server in qrtr_endpoint_post().
+
+Finally, call the new API from MHI endpoint driver by passing the MHI
+controller index as the parameter. The MHI controller index is unique for
+each controller, thereby for each MHI endpoint device.
+
+Link: https://lore.kernel.org/r/20261022-qrtr-multi-ep-v4-2-c6fdb75fcd3e@oss.qualcomm.com
+
+Upstream-Status: Submitted [https://lore.kernel.org/r/20261022-qrtr-multi-ep-v4-2-c6fdb75fcd3e@oss.qualcomm.com]
+Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+---
+ MAINTAINERS        |  1 +
+ include/net/qrtr.h | 22 ++++++++++++++++++++++
+ net/qrtr/af_qrtr.c |  9 +++++++++
+ net/qrtr/mhi.c     |  4 +++-
+ 4 files changed, 35 insertions(+), 1 deletion(-)
+ create mode 100644 include/net/qrtr.h
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 3a19da74d00c..bc1af0cd8a8b 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -22504,6 +22504,7 @@ QUALCOMM IPC ROUTER (QRTR) DRIVER
+ M:	Manivannan Sadhasivam <mani@kernel.org>
+ L:	linux-arm-msm@vger.kernel.org
+ S:	Maintained
++F:	include/net/qrtr.h
+ F:	include/trace/events/qrtr.h
+ F:	include/uapi/linux/qrtr.h
+ F:	net/qrtr/
+diff --git a/include/net/qrtr.h b/include/net/qrtr.h
+new file mode 100644
+index 000000000000..6beefe89943b
+--- /dev/null
++++ b/include/net/qrtr.h
+@@ -0,0 +1,22 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++
++#ifndef _NET_QRTR_H
++#define _NET_QRTR_H
++
++#include <linux/types.h>
++
++/* Node ids at and above this base are reserved for the host and are never
++ * accepted from an endpoint. The base is well above the ids used by the
++ * remote nodes, so that pre-existing node ids stay untouched.
++ */
++#define QRTR_NODE_HOST_BASE 0x10000u
++
++/* Compute host node id from a per-device index. The index must be unique
++ * among the host assigned endpoints and smaller than QRTR_NODE_HOST_BASE.
++ */
++static inline unsigned int qrtr_host_node_id(unsigned int index)
++{
++	return QRTR_NODE_HOST_BASE + index;
++}
++
++#endif /* _NET_QRTR_H */
+diff --git a/net/qrtr/af_qrtr.c b/net/qrtr/af_qrtr.c
+index 0a0bbffd8dd6..881bf8ff5292 100644
+--- a/net/qrtr/af_qrtr.c
++++ b/net/qrtr/af_qrtr.c
+@@ -10,6 +10,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/wait.h>
+ 
++#include <net/qrtr.h>
+ #include <net/sock.h>
+ 
+ #include "qrtr.h"
+@@ -569,6 +570,12 @@ int qrtr_endpoint_post(struct qrtr_endpoint *ep, const void *data, size_t len)
+ 	    cb->type != QRTR_TYPE_RESUME_TX)
+ 		goto err;
+ 
++	/* Host assigned node ids are not supposed to overlap with
++	 * remote node ids
++	 */
++	if (cb->src_node >= QRTR_NODE_HOST_BASE)
++		goto err;
++
+ 	skb_put_data(skb, data + hdrlen, size);
+ 
+ 	nid = cb->src_node;
+@@ -594,6 +601,8 @@ int qrtr_endpoint_post(struct qrtr_endpoint *ep, const void *data, size_t len)
+ 		const struct qrtr_ctrl_pkt *pkt = data + hdrlen;
+ 
+ 		nid = le32_to_cpu(pkt->server.node);
++		if (nid >= QRTR_NODE_HOST_BASE)
++			goto err;
+ 
+ 		if (nid != READ_ONCE(node->ep_nid)) {
+ 			rc = qrtr_node_assign(node, nid);
+diff --git a/net/qrtr/mhi.c b/net/qrtr/mhi.c
+index 3990da1a65dc..c920ab61f848 100644
+--- a/net/qrtr/mhi.c
++++ b/net/qrtr/mhi.c
+@@ -6,6 +6,7 @@
+ #include <linux/mhi.h>
+ #include <linux/module.h>
+ #include <linux/skbuff.h>
++#include <net/qrtr.h>
+ #include <net/sock.h>
+ 
+ #include "qrtr.h"
+@@ -127,7 +128,8 @@ static int qcom_mhi_qrtr_probe(struct mhi_device *mhi_dev,
+ 	if (rc)
+ 		return rc;
+ 
+-	rc = qrtr_endpoint_register(&qdev->ep, QRTR_EP_NID_AUTO);
++	rc = qrtr_endpoint_register(&qdev->ep,
++				    qrtr_host_node_id(mhi_dev->mhi_cntrl->index));
+ 	if (rc)
+ 		goto err_unprepare;
+ 
+-- 
+2.34.1

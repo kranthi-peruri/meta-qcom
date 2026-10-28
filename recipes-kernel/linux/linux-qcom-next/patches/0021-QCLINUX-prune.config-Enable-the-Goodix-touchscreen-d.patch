@@ -1,0 +1,30 @@
+From c607679ba4fa122081e6d572c159538d518bbad9 Mon Sep 17 00:00:00 2001
+From: Kranthi Peruri <kperuri@qti.qualcomm.com>
+Date: Wed, 28 Oct 2026 10:14:50 +0530
+Subject: [PATCH] QCLINUX: prune.config: Enable the Goodix touchscreen driver
+ Remove TOUCHSCREEN_GOODIX from prune.config to enable it. It is used by the
+ touch controllers on the Raspberry Pi 7 inch (GT911) and Waveshare 8 inch
+ (GT9271) DSI panels.
+
+Signed-off-by: Vishnu Saini <vishnu.saini@oss.qualcomm.com>
+
+Upstream-Status: Pending
+---
+ arch/arm64/configs/prune.config | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/arch/arm64/configs/prune.config b/arch/arm64/configs/prune.config
+index 6f75cb6b2744..ee6f5cf8efef 100644
+--- a/arch/arm64/configs/prune.config
++++ b/arch/arm64/configs/prune.config
+@@ -108,7 +108,6 @@
+ # CONFIG_KEYBOARD_MTK_PMIC is not set
+ # CONFIG_MOUSE_ELAN_I2C is not set
+ # CONFIG_TOUCHSCREEN_ATMEL_MXT is not set
+-# CONFIG_TOUCHSCREEN_GOODIX is not set
+ # CONFIG_TOUCHSCREEN_ELAN is not set
+ # CONFIG_TOUCHSCREEN_EDT_FT5X06 is not set
+ # CONFIG_INPUT_TPS65219_PWRBUTTON is not set
+-- 
+2.34.1
+

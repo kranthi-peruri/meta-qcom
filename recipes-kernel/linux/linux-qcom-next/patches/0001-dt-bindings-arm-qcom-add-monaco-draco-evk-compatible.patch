@@ -1,0 +1,25 @@
+From 4d3302e78515fe8431f7003e9fa0da939a04bc03 Mon Sep 17 00:00:00 2001
+From: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
+Date: Thu, 8 Oct 2026 18:23:43 +0530
+Subject: [PATCH 01/20] dt-bindings: arm: qcom: add monaco draco evk compatible
+ strings
+
+Add compatible strings for the Qualcomm Monaco Draco EVK board
+based on the QCS8300 SoC.
+
+Signed-off-by: Faruque Ansari <faruque.ansari@oss.qualcomm.com>
+Upstream-Status: Pending
+---
+ Documentation/devicetree/bindings/arm/qcom.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+--- kernel-source.orig/Documentation/devicetree/bindings/arm/qcom.yaml
++++ kernel-source/Documentation/devicetree/bindings/arm/qcom.yaml
+@@ -941,6 +941,7 @@
+               - arduino,monza
+               - qcom,monaco-ac-evk
+               - qcom,monaco-evk
++              - qcom,monaco-draco-evk
+               - qcom,qcs8300-ride
+           - const: qcom,qcs8300
+ 

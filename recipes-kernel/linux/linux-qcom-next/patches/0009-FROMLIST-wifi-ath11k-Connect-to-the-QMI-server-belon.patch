@@ -1,0 +1,113 @@
+From 3343e8251f03b2b2ace70adeafe451070df08fde Mon Sep 17 00:00:00 2001
+From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+Date: Thu, 22 Oct 2026 19:43:09 +0200
+Subject: [PATCH 09/20] FROMLIST: wifi: ath11k: Connect to the QMI server
+ belonging to the device owned by this driver
+
+When two identical ath11k PCIe devices are connected to the same host, both
+advertise the WLFW service with the same service and instance id. The QMI
+lookup reports both servers to each device, so a device may connect to the
+firmware running on the other device.
+
+But now, QRTR provides each MHI endpoint a unique node id which is
+different from the node id announced by the device. So use the same id to
+pick the correct server. Add a get_qrtr_node_id() HIF callback that returns
+the node id derived from the MHI controller index and zero for transports
+that do not assign one. In the new_server callback, reject any service
+whose node id does not match. A node id of zero disables the check, so
+transports that do not assign one keep their current behavior.
+
+Link: https://lore.kernel.org/r/20261022-qrtr-multi-ep-v4-3-c6fdb75fcd3e@oss.qualcomm.com
+
+Upstream-Status: Submitted [https://lore.kernel.org/r/20261022-qrtr-multi-ep-v4-3-c6fdb75fcd3e@oss.qualcomm.com]
+Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+---
+ drivers/net/wireless/ath/ath11k/hif.h |  9 +++++++++
+ drivers/net/wireless/ath/ath11k/pci.c |  9 +++++++++
+ drivers/net/wireless/ath/ath11k/qmi.c | 10 ++++++++++
+ 3 files changed, 28 insertions(+)
+
+diff --git a/drivers/net/wireless/ath/ath11k/hif.h b/drivers/net/wireless/ath/ath11k/hif.h
+index 017fed1b4bd1..f432fa4890be 100644
+--- a/drivers/net/wireless/ath/ath11k/hif.h
++++ b/drivers/net/wireless/ath/ath11k/hif.h
+@@ -32,6 +32,7 @@ struct ath11k_hif_ops {
+ 	void (*ce_irq_disable)(struct ath11k_base *ab);
+ 	void (*get_ce_msi_idx)(struct ath11k_base *ab, u32 ce_id, u32 *msi_idx);
+ 	void (*coredump_download)(struct ath11k_base *ab);
++	unsigned int (*get_qrtr_node_id)(struct ath11k_base *ab);
+ };
+ 
+ static inline void ath11k_hif_ce_irq_enable(struct ath11k_base *ab)
+@@ -159,4 +160,12 @@ static inline void ath11k_hif_coredump_download(struct ath11k_base *ab)
+ 		ab->hif.ops->coredump_download(ab);
+ }
+ 
++static inline unsigned int ath11k_hif_get_qrtr_node_id(struct ath11k_base *ab)
++{
++	if (!ab->hif.ops->get_qrtr_node_id)
++		return 0;
++
++	return ab->hif.ops->get_qrtr_node_id(ab);
++}
++
+ #endif /* _HIF_H_ */
+diff --git a/drivers/net/wireless/ath/ath11k/pci.c b/drivers/net/wireless/ath/ath11k/pci.c
+index a163168f3617..d40c057e130c 100644
+--- a/drivers/net/wireless/ath/ath11k/pci.c
++++ b/drivers/net/wireless/ath/ath11k/pci.c
+@@ -10,6 +10,7 @@
+ #include <linux/of.h>
+ #include <linux/time.h>
+ #include <linux/vmalloc.h>
++#include <net/qrtr.h>
+ 
+ #include "pci.h"
+ #include "core.h"
+@@ -900,6 +901,13 @@ static int ath11k_pci_start(struct ath11k_base *ab)
+ 	return 0;
+ }
+ 
++static unsigned int ath11k_pci_get_qrtr_node_id(struct ath11k_base *ab)
++{
++	struct ath11k_pci *ab_pci = ath11k_pci_priv(ab);
++
++	return qrtr_host_node_id(ab_pci->mhi_ctrl->index);
++}
++
+ static const struct ath11k_hif_ops ath11k_pci_hif_ops = {
+ 	.start = ath11k_pci_start,
+ 	.stop = ath11k_pcic_stop,
+@@ -921,6 +929,7 @@ static const struct ath11k_hif_ops ath11k_pci_hif_ops = {
+ #ifdef CONFIG_DEV_COREDUMP
+ 	.coredump_download = ath11k_pci_coredump_download,
+ #endif
++	.get_qrtr_node_id = ath11k_pci_get_qrtr_node_id,
+ };
+ 
+ static void ath11k_pci_read_hw_version(struct ath11k_base *ab, u32 *major, u32 *minor)
+diff --git a/drivers/net/wireless/ath/ath11k/qmi.c b/drivers/net/wireless/ath/ath11k/qmi.c
+index 7dc07339b957..6d86e552038c 100644
+--- a/drivers/net/wireless/ath/ath11k/qmi.c
++++ b/drivers/net/wireless/ath/ath11k/qmi.c
+@@ -3170,8 +3170,18 @@ static int ath11k_qmi_ops_new_server(struct qmi_handle *qmi_hdl,
+ 	struct ath11k_qmi *qmi = container_of(qmi_hdl, struct ath11k_qmi, handle);
+ 	struct ath11k_base *ab = qmi->ab;
+ 	struct sockaddr_qrtr *sq = &qmi->sq;
++	unsigned int node_id;
+ 	int ret;
+ 
++	/* Identical devices advertise the same QMI services, so connect only to
++	 * the QMI server on this device's node. A node id of 0 means the
++	 * transport has not assigned a unique node id, so accept the server
++	 * unfiltered.
++	 */
++	node_id = ath11k_hif_get_qrtr_node_id(ab);
++	if (node_id && service->node != node_id)
++		return -EINVAL;
++
+ 	sq->sq_family = AF_QIPCRTR;
+ 	sq->sq_node = service->node;
+ 	sq->sq_port = service->port;
+-- 
+2.34.1

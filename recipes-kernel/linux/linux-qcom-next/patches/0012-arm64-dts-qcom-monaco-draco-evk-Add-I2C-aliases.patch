@@ -1,0 +1,32 @@
+From 691472b2ada8c5e1a261cf5a071f26e318ea64a7 Mon Sep 17 00:00:00 2001
+From: Vishnu Saini <vishnu.saini@oss.qualcomm.com>
+Date: Fri, 16 Oct 2026 20:25:54 +0530
+Subject: [PATCH 12/20] arm64: dts: qcom: monaco-draco-evk: Add I2C aliases
+
+Add aliases for i2c8, i2c13, i2c14 and i2c15 to keep the bus numbering
+stable across boots.
+
+Signed-off-by: Vishnu Saini <vishnu.saini@oss.qualcomm.com>
+Upstream-Status: Pending
+---
+ arch/arm64/boot/dts/qcom/monaco-draco-evk.dts | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/monaco-draco-evk.dts b/arch/arm64/boot/dts/qcom/monaco-draco-evk.dts
+index 800755ba8bf1..089222723129 100644
+--- a/arch/arm64/boot/dts/qcom/monaco-draco-evk.dts
++++ b/arch/arm64/boot/dts/qcom/monaco-draco-evk.dts
+@@ -15,6 +15,10 @@ / {
+ 	chassis-type = "embedded";
+ 
+ 	aliases {
++		i2c8 = &i2c8;
++		i2c13 = &i2c13;
++		i2c14 = &i2c14;
++		i2c15 = &i2c15;
+ 		serial1 = &uart2;
+ 	};
+ 
+-- 
+2.34.1
+

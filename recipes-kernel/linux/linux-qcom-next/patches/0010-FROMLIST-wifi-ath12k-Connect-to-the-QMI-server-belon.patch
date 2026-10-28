@@ -1,0 +1,113 @@
+From 4dad236144e3aa247fdc8c85546b6a1924a9ae2f Mon Sep 17 00:00:00 2001
+From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+Date: Thu, 22 Oct 2026 19:43:10 +0200
+Subject: [PATCH 10/20] FROMLIST: wifi: ath12k: Connect to the QMI server
+ belonging to the device owned by this driver
+
+When two identical ath12k PCIe devices are connected to the same host, both
+advertise the WLFW service with the same service and instance id. The QMI
+lookup reports both servers to each device, so a device may connect to the
+firmware running on the other device.
+
+But now, QRTR provides each MHI endpoint a unique node id which is
+different from the node id announced by the device. So use the same id to
+pick the correct server. Add a get_qrtr_node_id() HIF callback that returns
+the node id derived from the MHI controller index and zero for transports
+that do not assign one. In the new_server callback, reject any service
+whose node id does not match. A node id of zero disables the check, so
+transports that do not assign one keep their current behavior.
+
+Link: https://lore.kernel.org/r/20261022-qrtr-multi-ep-v4-4-c6fdb75fcd3e@oss.qualcomm.com
+
+Upstream-Status: Submitted [https://lore.kernel.org/r/20261022-qrtr-multi-ep-v4-4-c6fdb75fcd3e@oss.qualcomm.com]
+Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+---
+ drivers/net/wireless/ath/ath12k/hif.h |  9 +++++++++
+ drivers/net/wireless/ath/ath12k/pci.c |  9 +++++++++
+ drivers/net/wireless/ath/ath12k/qmi.c | 11 +++++++++++
+ 3 files changed, 29 insertions(+)
+
+--- kernel-source.orig/drivers/net/wireless/ath/ath12k/hif.h
++++ kernel-source/drivers/net/wireless/ath/ath12k/hif.h
+@@ -31,6 +31,7 @@
+ 	void (*ce_irq_disable)(struct ath12k_base *ab);
+ 	void (*get_ce_msi_idx)(struct ath12k_base *ab, u32 ce_id, u32 *msi_idx);
+ 	void (*coredump_download)(struct ath12k_base *ab);
++	unsigned int (*get_qrtr_node_id)(struct ath12k_base *ab);
+ };
+ 
+ static inline int ath12k_hif_map_service_to_pipe(struct ath12k_base *ab, u16 service_id,
+@@ -153,4 +154,12 @@
+ 	if (ab->hif.ops->coredump_download)
+ 		ab->hif.ops->coredump_download(ab);
+ }
++
++static inline unsigned int ath12k_hif_get_qrtr_node_id(struct ath12k_base *ab)
++{
++	if (!ab->hif.ops->get_qrtr_node_id)
++		return 0;
++
++	return ab->hif.ops->get_qrtr_node_id(ab);
++}
+ #endif /* ATH12K_HIF_H */
+--- kernel-source.orig/drivers/net/wireless/ath/ath12k/pci.c
++++ kernel-source/drivers/net/wireless/ath/ath12k/pci.c
+@@ -10,6 +10,7 @@
+ #include <linux/pci.h>
+ #include <linux/time.h>
+ #include <linux/vmalloc.h>
++#include <net/qrtr.h>
+ 
+ #include "pci.h"
+ #include "core.h"
+@@ -1482,6 +1483,13 @@
+ 	ath12k_pci_sw_reset(ab_pci->ab, false);
+ }
+ 
++static unsigned int ath12k_pci_get_qrtr_node_id(struct ath12k_base *ab)
++{
++	struct ath12k_pci *ab_pci = ath12k_pci_priv(ab);
++
++	return qrtr_host_node_id(ab_pci->mhi_ctrl->index);
++}
++
+ static const struct ath12k_hif_ops ath12k_pci_hif_ops = {
+ 	.start = ath12k_pci_start,
+ 	.stop = ath12k_pci_stop,
+@@ -1502,6 +1510,7 @@
+ #ifdef CONFIG_ATH12K_COREDUMP
+ 	.coredump_download = ath12k_pci_coredump_download,
+ #endif
++	.get_qrtr_node_id = ath12k_pci_get_qrtr_node_id,
+ };
+ 
+ static enum ath12k_device_family
+--- kernel-source.orig/drivers/net/wireless/ath/ath12k/qmi.c
++++ kernel-source/drivers/net/wireless/ath/ath12k/qmi.c
+@@ -9,6 +9,7 @@
+ #include "qmi.h"
+ #include "core.h"
+ #include "debug.h"
++#include "hif.h"
+ #include <linux/of.h>
+ #include <linux/firmware.h>
+ #include <linux/of_address.h>
+@@ -3913,8 +3914,18 @@
+ 	struct ath12k_qmi *qmi = container_of(qmi_hdl, struct ath12k_qmi, handle);
+ 	struct ath12k_base *ab = qmi->ab;
+ 	struct sockaddr_qrtr *sq = &qmi->sq;
++	unsigned int node_id;
+ 	int ret;
+ 
++	/* Identical devices advertise the same QMI services, so connect only to
++	 * the QMI server on this device's node. A node id of 0 means the
++	 * transport has not assigned a unique node id, so accept the server
++	 * unfiltered.
++	 */
++	node_id = ath12k_hif_get_qrtr_node_id(ab);
++	if (node_id && service->node != node_id)
++		return -EINVAL;
++
+ 	sq->sq_family = AF_QIPCRTR;
+ 	sq->sq_node = service->node;
+ 	sq->sq_port = service->port;
