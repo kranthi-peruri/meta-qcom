@@ -1,0 +1,82 @@
+From c9158402f550d518e6fff32b33e70c17e589f51c Mon Sep 17 00:00:00 2001
+From: Kranthi Peruri <kperuri@qti.qualcomm.com>
+Date: Fri, 23 Oct 2026 15:07:08 +0530
+Subject: [PATCH] ath12k: pci: encode qmi_instance using QRTR NID bit layout
+
+With ATH12K_FW_FEATURE_MULTI_QRTR_ID enabled, firmware derives the WLAN
+QRTR node ID as:
+  NID = IPC_ROUTER_DEFAULT_PROCESSOR_ID + PCIE_LOCAL_RSV0[15:0]
+
+The host programs qmi_instance into PCIE_LOCAL_RSV0. Using an
+incompatible bit placement can overlap node IDs used by other
+processors and cause QRTR node registration conflicts.
+
+Encode qmi_instance using the WLAN QRTR NID bit layout:
+  bits [9:6]   PCI bus number
+  bits [12:10] PCI domain number
+
+The proc_id bits [5:0] are fixed to WLAN (7) in firmware and are not
+encoded by the host.
+
+Update QRTR_PCI_* masks to match these bit ranges and remove duplicate
+mask definitions.
+
+Tested-on: QCC2072 hw1.0 PCI CI_WLAN.COL.1.0.c2-00229.1-QCACOLSWPL_V1_TO_SILICON-1
+
+Change-Id: I29e5222c7ef5ff545a19c18cc3a4c41d52a7278b
+Signed-off-by: Daizhuang Bai <daizhuang.bai@oss.qualcomm.com>
+
+Upstream-Status: Pending
+---
+ drivers/net/wireless/ath/ath12k/pci.c | 9 +++++++--
+ drivers/net/wireless/ath/ath12k/pci.h | 6 ++----
+ 2 files changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/wireless/ath/ath12k/pci.c b/drivers/net/wireless/ath/ath12k/pci.c
+index 6441927b5382..ec724eeed1bf 100644
+--- a/drivers/net/wireless/ath/ath12k/pci.c
++++ b/drivers/net/wireless/ath/ath12k/pci.c
+@@ -702,9 +702,14 @@ static void ath12k_pci_init_qmi_ce_config(struct ath12k_base *ab)
+ 	ab->qmi.service_ins_id = ab->hw_params->qmi_service_ins_id;
+ 
+ 	if (ath12k_fw_feature_supported(ab, ATH12K_FW_FEATURE_MULTI_QRTR_ID)) {
++		/*
++		 * QRTR NID layout: [12:10] domain, [9:6] bus, [5:0] proc_id.
++		 * proc_id is fixed for WLAN and is not encoded into qmi_instance.
++		 */
+ 		ab_pci->qmi_instance =
+-			u32_encode_bits(pci_domain_nr(bus), DOMAIN_NUMBER_MASK) |
+-			u32_encode_bits(bus->number, BUS_NUMBER_MASK);
++			u32_encode_bits(bus->number, QRTR_PCI_BUS_NUMBER_MASK) |
++			u32_encode_bits(pci_domain_nr(bus),
++					QRTR_PCI_DOMAIN_NR_MASK);
+ 		ab->qmi.service_ins_id += ab_pci->qmi_instance;
+ 	}
+ }
+diff --git a/drivers/net/wireless/ath/ath12k/pci.h b/drivers/net/wireless/ath/ath12k/pci.h
+index 0e0e2020c6ae..35e8e0fe15cd 100644
+--- a/drivers/net/wireless/ath/ath12k/pci.h
++++ b/drivers/net/wireless/ath/ath12k/pci.h
+@@ -61,8 +61,6 @@
+ 
+ #define PCIE_LOCAL_REG_QRTR_NODE_ID(ab) \
+ 	((ab)->hal.regs->qrtr_node_id)
+-#define DOMAIN_NUMBER_MASK			GENMASK(7, 4)
+-#define BUS_NUMBER_MASK				GENMASK(3, 0)
+ 
+ #define PCI_BAR_WINDOW0_BASE	0x1E00000
+ #define PCI_BAR_WINDOW0_END	0x1E7FFFC
+@@ -73,8 +71,8 @@
+ #define PCI_PARF_END		0x1E0BFFC
+ #define PCI_MHIREGLEN_REG	0x1E0E100
+ #define PCI_MHI_REGION_END	0x1E0EFFC
+-#define QRTR_PCI_DOMAIN_NR_MASK		GENMASK(7, 4)
+-#define QRTR_PCI_BUS_NUMBER_MASK	GENMASK(3, 0)
++#define QRTR_PCI_BUS_NUMBER_MASK	GENMASK(9, 6)
++#define QRTR_PCI_DOMAIN_NR_MASK		GENMASK(12, 10)
+ 
+ struct ath12k_msi_user {
+ 	const char *name;
+-- 
+2.34.1
+

@@ -1,0 +1,66 @@
+From 8d1993f52039bcaa2da15854147f4290fe34b8ff Mon Sep 17 00:00:00 2001
+From: Kranthi Peruri <kperuri@qti.qualcomm.com>
+Date: Fri, 23 Oct 2026 19:35:00 +0530
+Subject: [PATCH] arm64: dts: qcom: lemans-draco-evk: EEPROM support
+
+Enabled EEPROM support on I2C18
+
+Upstream-Status: Pending
+Signed-off-by: Kranthi Peruri <kperuri@qti.qualcomm.com>
+---
+ arch/arm64/boot/dts/qcom/lemans-draco-evk.dts | 32 +++++++++----------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/qcom/lemans-draco-evk.dts b/arch/arm64/boot/dts/qcom/lemans-draco-evk.dts
+index 1d71b2458cfc..5bceabb8609f 100644
+--- a/arch/arm64/boot/dts/qcom/lemans-draco-evk.dts
++++ b/arch/arm64/boot/dts/qcom/lemans-draco-evk.dts
+@@ -651,22 +651,6 @@ expander4: gpio@38 {
+ 		#gpio-cells = <2>;
+ 		gpio-controller;
+ 	};
+-
+-	eeprom@50 {
+-		compatible = "giantec,gt24c256c", "atmel,24c256";
+-		reg = <0x50>;
+-		pagesize = <64>;
+-
+-		nvmem-layout {
+-			compatible = "fixed-layout";
+-			#address-cells = <1>;
+-			#size-cells = <1>;
+-
+-			mac_addr0: mac-addr@0 {
+-				reg = <0x0 0x6>;
+-			};
+-		};
+-	};
+ };
+ 
+ &i2c7 {
+@@ -881,6 +865,22 @@ expander5: gpio@3c {
+ 		#gpio-cells = <2>;
+ 		gpio-controller;
+ 	};
++
++	eeprom@50 {
++		compatible = "giantec,gt24c256c", "atmel,24c256";
++		reg = <0x50>;
++		pagesize = <64>;
++
++		nvmem-layout {
++			compatible = "fixed-layout";
++			#address-cells = <1>;
++			#size-cells = <1>;
++
++			mac_addr0: mac-addr@0 {
++				reg = <0x0 0x6>;
++			};
++		};
++	};
+ };
+ 
+ &pcie0 {
+-- 
+2.34.1
+

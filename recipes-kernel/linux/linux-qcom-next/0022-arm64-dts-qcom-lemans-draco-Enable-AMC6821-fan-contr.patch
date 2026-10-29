@@ -1,0 +1,62 @@
+From 6e8e8b8b297099b5ce26db072d981d7f2984d7ad Mon Sep 17 00:00:00 2001
+From: Anuj Tripathi <anujtrip@qti.qualcomm.com>
+Date: Thu, 15 Oct 2026 18:41:42 +0530
+Subject: [PATCH] arm64: dts: qcom: lemans-draco: Enable AMC6821 fan controller
+ Enable AMC6821 fan controller for lemans-draco platform and configure pwm
+ polarity as inverted.
+
+Signed-off-by: Anuj Tripathi <anuj.tripathi@oss.qualcomm.com>
+
+Upstream-Status: Pending
+---
+ arch/arm64/boot/dts/qcom/lemans-draco-evk.dts | 20 +++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/lemans-draco-evk.dts b/arch/arm64/boot/dts/qcom/lemans-draco-evk.dts
+index 5bceabb8609f..cf03eecd7baa 100644
+--- a/arch/arm64/boot/dts/qcom/lemans-draco-evk.dts
++++ b/arch/arm64/boot/dts/qcom/lemans-draco-evk.dts
+@@ -4,6 +4,7 @@
+  */
+ /dts-v1/;
+ 
++#include <dt-bindings/pwm/pwm.h>
+ #include "lemans-draco-evk-som.dtsi"
+ 
+ / {
+@@ -653,6 +654,20 @@ expander4: gpio@38 {
+ 	};
+ };
+ 
++&i2c4 {
++	status = "okay";
++
++	fan_controller: fan@1a {
++		compatible = "ti,amc6821";
++		reg = <0x1a>;
++		#pwm-cells = <2>;
++
++		fan {
++			pwms = <&fan_controller 40000 PWM_POLARITY_INVERTED>;
++		};
++	};
++};
++
+ &i2c7 {
+ 	status = "okay";
+ 	max98091: max98091@10 {
+@@ -670,6 +685,11 @@ max98091: max98091@10 {
+ 	};
+ };
+ 
++&qup_i2c4_default {
++	drive-strength = <6>;
++	bias-pull-up;
++};
++
+ &spi16 {
+         status = "okay";
+ 
+-- 
+2.34.1
+
